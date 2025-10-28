@@ -142,8 +142,13 @@ const Login = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-plasma-primary">PLASMAGUARD</h1>
-          <p className="text-gray-600 mt-2">Seguridad y Confianza</p>
+          <div className="flex items-center justify-center space-x-4 mb-3">
+            <img src="/favicon-32x32.png" alt="Logo" className="w-10 h-10" />
+           <h1 className="text-4xl font-bold text-plasma-primary">
+             PLASMA<span className="text-red-600">GUARD</span>
+           </h1>
+         </div>
+         <p className="text-gray-600">Sistema de Monitoreo de Plasma</p>
         </div>
         
         <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
