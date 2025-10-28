@@ -15,13 +15,58 @@ let lastDataReceived = Date.now();
 const DATA_TIMEOUT = 45000; // 45 segundos sin datos = problema (basado en tus 6.5 min)
 let totalDataReceived = 0;
 
-// Middleware para detectar datos del ESP32
+// =====================================================
+// MIDDLEWARE Y CONFIGURACIÓN - ORDEN CORREGIDO
+// =====================================================
+
+// 1. CORS PRIMERO - ESENCIAL para todas las requests
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://plasmaguard-prod.vercel.app',
+    'https://plasmaguard-system-k2n1.vercel.app',
+    'https://plasmaguard.vercel.app'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key']
+}));
+
+// 2. Manejar explícitamente requests OPTIONS (preflight)
+app.options('*', cors());
+
+// 3. Seguridad
+app.use(helmet());
+
+// 4. Body parser
+app.use(express.json({ limit: '10mb' }));
+
+// 5. Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 1000,
+  message: {
+    error: 'Demasiadas requests',
+    message: 'Intenta nuevamente en 15 minutos'
+  },
+  skip: (req) => {
+    return req.path === '/api/sensors/data' && 
+           req.headers['x-api-key'] === process.env.API_KEY;
+  }
+});
+app.use(limiter);
+
+// 6. Middleware para detectar datos del ESP32 (DESPUÉS de CORS)
 app.use('/api/sensors/data', (req, res, next) => {
   lastDataReceived = Date.now();
   totalDataReceived++;
   console.log(`📊 Datos recibidos: ${totalDataReceived} - Último: ${new Date().toLocaleTimeString()}`);
   next();
 });
+
+// =====================================================
+// FUNCIONES DE MONITOREO
+// =====================================================
 
 // Función de verificación periódica
 function checkDataFlow() {
@@ -70,39 +115,8 @@ async function checkSupabaseConnection() {
 setInterval(checkSupabaseConnection, 120000);
 
 // =====================================================
-// MIDDLEWARE Y CONFIGURACIÓN
+// IMPORTAR Y USAR RUTAS
 // =====================================================
-
-// Middleware de seguridad
-app.use(helmet());
-app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'https://plasmaguard-prod.vercel.app',
-    'https://plasmaguard-system-k2n1.vercel.app',
-    'https://plasmaguard.vercel.app'
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key']
-}));
-app.use(express.json({ limit: '10mb' }));
-
-// Rate limiting MÁS PERMISIVO para el ESP32
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 1000, // ↑ AUMENTADO de 100 a 1000 requests
-  message: {
-    error: 'Demasiadas requests',
-    message: 'Intenta nuevamente en 15 minutos'
-  },
-  skip: (req) => {
-    // No aplicar rate limiting a requests del ESP32
-    return req.path === '/api/sensors/data' && 
-           req.headers['x-api-key'] === process.env.API_KEY;
-  }
-});
-app.use(limiter);
 
 // Importar rutas
 const authRoutes = require('./routes/auth');
