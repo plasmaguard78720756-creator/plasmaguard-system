@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: plasma-monitoring-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        value: tu_jwt_secreto_super_seguro_para_plasma_2024
+      - key: API_KEY
+        value: esp32_plasma_monitoring_key_2024
