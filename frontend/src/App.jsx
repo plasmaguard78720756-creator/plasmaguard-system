@@ -31,7 +31,7 @@ function App() {
             
             {/* Rutas de Administrador */}
             <Route path="/admin/verificar" element={<VerificacionAdmin />} />
-            <Route path="/admin/dashboard" element={<DashboardAdmin />} />
+            <Route path="/admin/dashboard" element={<DashboardAdminTemp />} />
             
             {/* Rutas de Servicio Técnico */}
             <Route path="/tecnico/verificar" element={<VerificacionTecnico />} />
