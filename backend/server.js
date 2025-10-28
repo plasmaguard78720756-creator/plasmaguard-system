@@ -78,10 +78,13 @@ app.use(helmet());
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'http://localhost:3000', 
-    'https://tu-frontend.vercel.app'
+    'https://plasmaguard-prod.vercel.app',
+    'https://plasmaguard-system-k2n1.vercel.app',
+    'https://plasmaguard.vercel.app'
   ],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key']
 }));
 app.use(express.json({ limit: '10mb' }));
 
