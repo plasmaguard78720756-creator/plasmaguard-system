@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase'; // Ajusta la ruta según tu proyecto
+import { supabase } from '../contexts/AuthContext';
 
 const DashboardAdmin = () => {
   const navigate = useNavigate();
