@@ -1,6 +1,6 @@
-// src/App.jsx - ACTUALIZADO
+// src/App.jsx - VERSIÓN CORREGIDA Y SIMPLE
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -31,14 +31,15 @@ function App() {
             
             {/* Rutas de Administrador */}
             <Route path="/admin/verificar" element={<VerificacionAdmin />} />
-            <Route path="/admin/dashboard" element={<DashboardAdminTemp />} />
+            <Route path="/admin/dashboard" element={<DashboardAdmin />} />
             
             {/* Rutas de Servicio Técnico */}
             <Route path="/tecnico/verificar" element={<VerificacionTecnico />} />
             <Route path="/tecnico/dashboard" element={<DashboardTecnico />} />
             <Route path="/tecnico/control" element={<ControlModos />} />
             
-            {/* Agregaremos las demás rutas después */}
+            {/* Ruta por defecto */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
       </Router>
