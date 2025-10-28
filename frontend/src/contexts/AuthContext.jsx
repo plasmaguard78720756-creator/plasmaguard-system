@@ -1,14 +1,6 @@
-// src/contexts/AuthContext.jsx - VERSIÓN CON SUPABASE
+// src/contexts/AuthContext.jsx - VERSIÓN COMPLETA ACTUALIZADA
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import { authService } from '../services/api';
-
-// Configuración de Supabase
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-// Crear cliente de Supabase
-export const supabase = createClient(supabaseUrl, supabaseKey);
 
 const AuthContext = createContext();
 
@@ -108,8 +100,7 @@ export const AuthProvider = ({ children }) => {
     error,
     clearError,
     isAuthenticated: !!user,
-    userRole: user?.role,
-    supabase // Exportar supabase para usar en otros componentes
+    userRole: user?.role
   };
 
   return (
