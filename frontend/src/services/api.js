@@ -1,8 +1,8 @@
-// src/services/api.js
+// src/services/api.js - VERSIÓN CORREGIDA
 import axios from 'axios';
 
-// Configuración base de axios
-const API_BASE_URL = 'http://localhost:3000/api';
+// ✅ USAR VARIABLE DE ENTORNO en lugar de URL hardcodeada
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
