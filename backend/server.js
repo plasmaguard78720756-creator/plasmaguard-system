@@ -289,4 +289,27 @@ app.listen(PORT, () => {
   console.log(`   - Verificación BD cada 2 minutos`);
   console.log(`\n⚡ Listo para recibir datos del ESP32!`);
   console.log(`📊 Contador de datos iniciado: 0`);
-});
+});". De test-register.js: "// backend/test-register.js
+const supabase = require('./config/database');
+
+async function testTable() {
+  try {
+    console.log('🔍 Probando estructura de tabla users...');
+    
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .limit(1);
+    
+    if (error) {
+      console.log('❌ Error accediendo a la tabla:', error);
+    } else {
+      console.log('✅ Tabla users accesible');
+      console.log('Estructura:', data.length > 0 ? Object.keys(data[0]) : 'Tabla vacía');
+    }
+  } catch (error) {
+    console.log('❌ Error general:', error);
+  }
+}
+
+testTable();

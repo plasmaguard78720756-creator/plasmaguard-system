@@ -143,4 +143,4 @@ export const controlService = {
   },
 };
 
-export default api;g
+export default api;

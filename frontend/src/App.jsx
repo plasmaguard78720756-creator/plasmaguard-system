@@ -1,6 +1,6 @@
-// src/App.jsx - VERSIÓN CORREGIDA Y SIMPLE
+// src/App.jsx - ACTUALIZADO
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -38,8 +38,7 @@ function App() {
             <Route path="/tecnico/dashboard" element={<DashboardTecnico />} />
             <Route path="/tecnico/control" element={<ControlModos />} />
             
-            {/* Ruta por defecto */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+            {/* Agregaremos las demás rutas después */}
           </Routes>
         </div>
       </Router>
@@ -47,4 +46,4 @@ function App() {
   );
 }
 
-export default App;
+export default App
