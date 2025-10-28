@@ -1,7 +1,8 @@
-// src/pages/DashboardAdmin.jsx - VERSIÓN COMPLETA
+// src/pages/DashboardAdmin.jsx - VERSIÓN CON DATOS REALES
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { userService } from '../services/api'; // NUEVO IMPORT
 
 const DashboardAdmin = () => {
   const navigate = useNavigate();
@@ -12,15 +13,11 @@ const DashboardAdmin = () => {
   const [reportes, setReportes] = useState([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [viewMode, setViewMode] = useState('view'); // 'view', 'edit', 'add'
+  const [viewMode, setViewMode] = useState('view');
+  const [loading, setLoading] = useState(true); // NUEVO: Estado de carga
+  const [error, setError] = useState(''); // NUEVO: Manejo de errores
 
-  // Datos de ejemplo (luego vendrán del backend)
-  const usuariosEjemplo = [
-    { id: 1, name: 'Juan Pérez', email: 'juan@hospital.com', role: 'operador', ci: '1234567', active: true },
-    { id: 2, name: 'María García', email: 'maria@hospital.com', role: 'admin', ci: '7654321', active: true },
-    { id: 3, name: 'Carlos López', email: 'carlos@servicio.com', role: 'servicio', ci: '9876543', active: true },
-  ];
-
+  // Datos de ejemplo para fallas y reportes (mantener por ahora)
   const fallasEjemplo = [
     { id: 1, tipo: 'Temperatura', fecha: '2024-01-20 10:30:00', accion: 'Reporte' },
     { id: 2, tipo: 'Humedad', fecha: '2024-01-20 09:15:00', accion: 'Nada' },
@@ -33,9 +30,36 @@ const DashboardAdmin = () => {
     { id: 3, enviado: '2024-01-20 08:50:00', visto: 'No visto', solucion: 'No' },
   ];
 
+  // Cargar datos reales de usuarios - NUEVA FUNCIÓN
+  const cargarUsuarios = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      console.log('🔍 Cargando usuarios desde la base de datos...');
+      const response = await userService.getAllUsers();
+      
+      if (response.success) {
+        console.log('✅ Usuarios cargados:', response.data);
+        setUsuarios(response.data);
+      } else {
+        setError('Error al cargar usuarios: ' + response.error);
+        // Mantener datos de ejemplo como fallback
+        setUsuarios([]);
+      }
+    } catch (error) {
+      console.error('❌ Error cargando usuarios:', error);
+      setError('Error de conexión al cargar usuarios');
+      // Mantener array vacío en caso de error
+      setUsuarios([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    // Simular carga de datos
-    setUsuarios(usuariosEjemplo);
+    // Cargar datos iniciales
+    cargarUsuarios();
     setFallas(fallasEjemplo);
     setReportes(reportesEjemplo);
   }, []);
@@ -60,17 +84,65 @@ const DashboardAdmin = () => {
     setShowDeleteConfirm(true);
   };
 
-  const confirmarEliminarUsuario = () => {
-    if (selectedUser) {
-      setUsuarios(usuarios.filter(u => u.id !== selectedUser.id));
-      setShowDeleteConfirm(false);
-      setSelectedUser(null);
+  // NUEVA FUNCIÓN: Eliminar usuario de la base de datos
+  const confirmarEliminarUsuario = async () => {
+    if (!selectedUser) return;
+
+    try {
+      setLoading(true);
+      const response = await userService.deleteUser(selectedUser.id);
+      
+      if (response.success) {
+        // Actualizar lista localmente
+        setUsuarios(usuarios.filter(u => u.id !== selectedUser.id));
+        setShowDeleteConfirm(false);
+        setSelectedUser(null);
+        alert('✅ Usuario eliminado exitosamente');
+      } else {
+        alert('❌ Error al eliminar usuario: ' + response.error);
+      }
+    } catch (error) {
+      console.error('Error eliminando usuario:', error);
+      alert('❌ Error de conexión al eliminar usuario');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleAñadirUsuario = () => {
     setSelectedUser(null);
     setViewMode('add');
+  };
+
+  // NUEVA FUNCIÓN: Guardar usuario (crear o actualizar)
+  const handleGuardarUsuario = async (formData) => {
+    try {
+      setLoading(true);
+      
+      let response;
+      if (viewMode === 'add') {
+        // Crear nuevo usuario
+        response = await userService.createUser(formData);
+      } else {
+        // Actualizar usuario existente
+        response = await userService.updateUser(selectedUser.id, formData);
+      }
+
+      if (response.success) {
+        // Recargar lista de usuarios
+        await cargarUsuarios();
+        setViewMode('view');
+        setSelectedUser(null);
+        alert(`✅ ${response.message}`);
+      } else {
+        alert(`❌ ${response.error}`);
+      }
+    } catch (error) {
+      console.error('Error guardando usuario:', error);
+      alert('❌ Error de conexión al guardar usuario');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEliminarTodasFallas = () => {
@@ -109,23 +181,57 @@ const DashboardAdmin = () => {
       : <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-medium">No</span>;
   };
 
-  // Componente para ver/editar/añadir usuario
+  // Componente para ver/editar/añadir usuario - ACTUALIZADO
   const UserForm = () => {
     const [formData, setFormData] = useState(
-      selectedUser || { name: '', email: '', role: '', ci: '', active: true }
+      selectedUser || { 
+        name: '', 
+        email: '', 
+        role: '', 
+        ci: '', 
+        institucion: '', 
+        celular: '',
+        active: true 
+      }
     );
 
-    const handleSave = () => {
-      if (viewMode === 'add') {
-        // Añadir nuevo usuario
-        const newUser = { ...formData, id: Date.now() };
-        setUsuarios([...usuarios, newUser]);
-      } else if (viewMode === 'edit') {
-        // Editar usuario existente
-        setUsuarios(usuarios.map(u => u.id === selectedUser.id ? { ...formData, id: selectedUser.id } : u));
+    const [formErrors, setFormErrors] = useState({});
+
+    const validateForm = () => {
+      const errors = {};
+      
+      if (!formData.name.trim()) errors.name = 'Nombre es requerido';
+      if (!formData.email.trim()) errors.email = 'Email es requerido';
+      if (!formData.role) errors.role = 'Rol es requerido';
+      if (!formData.ci.trim()) errors.ci = 'CI es requerido';
+      
+      if (viewMode === 'add' && !formData.password) {
+        errors.password = 'Contraseña es requerida';
       }
-      setViewMode('view');
-      setSelectedUser(null);
+
+      setFormErrors(errors);
+      return Object.keys(errors).length === 0;
+    };
+
+    const handleSave = () => {
+      if (!validateForm()) return;
+
+      // Preparar datos para enviar
+      const userData = {
+        name: formData.name,
+        email: formData.email,
+        role: formData.role,
+        ci: formData.ci,
+        institucion: formData.institucion || '',
+        celular: formData.celular || ''
+      };
+
+      // Solo incluir password si estamos creando nuevo usuario
+      if (viewMode === 'add') {
+        userData.password = formData.password || 'password123'; // Contraseña por defecto
+      }
+
+      handleGuardarUsuario(userData);
     };
 
     const handleCancel = () => {
@@ -143,7 +249,10 @@ const DashboardAdmin = () => {
               <div><strong>Email:</strong> {selectedUser.email}</div>
               <div><strong>CI:</strong> {selectedUser.ci}</div>
               <div><strong>Rol:</strong> {getRoleBadge(selectedUser.role)}</div>
+              <div><strong>Institución:</strong> {selectedUser.institucion || 'No especificada'}</div>
+              <div><strong>Celular:</strong> {selectedUser.celular || 'No especificado'}</div>
               <div><strong>Estado:</strong> {selectedUser.active ? 'Activo' : 'Inactivo'}</div>
+              <div><strong>Fecha registro:</strong> {new Date(selectedUser.created_at).toLocaleDateString()}</div>
             </div>
             <button
               onClick={handleCancel}
@@ -164,48 +273,142 @@ const DashboardAdmin = () => {
               {viewMode === 'add' ? 'Añadir Usuario' : 'Editar Usuario'}
             </h3>
             <div className="space-y-4">
-              <input
-                type="text"
-                placeholder="Nombre"
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-              />
-              <input
-                type="text"
-                placeholder="CI"
-                value={formData.ci}
-                onChange={(e) => setFormData({...formData, ci: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-              />
-              <select
-                value={formData.role}
-                onChange={(e) => setFormData({...formData, role: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-              >
-                <option value="">Seleccionar rol</option>
-                <option value="operador">Operador</option>
-                <option value="admin">Administrador</option>
-                <option value="servicio">Servicio Técnico</option>
-              </select>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nombre *
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  className={`w-full px-3 py-2 border rounded-lg ${
+                    formErrors.name ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="Nombre completo"
+                />
+                {formErrors.name && (
+                  <p className="text-red-500 text-sm mt-1">{formErrors.name}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  className={`w-full px-3 py-2 border rounded-lg ${
+                    formErrors.email ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="usuario@gmail.com"
+                />
+                {formErrors.email && (
+                  <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  CI *
+                </label>
+                <input
+                  type="text"
+                  value={formData.ci}
+                  onChange={(e) => setFormData({...formData, ci: e.target.value})}
+                  className={`w-full px-3 py-2 border rounded-lg ${
+                    formErrors.ci ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="12345678"
+                />
+                {formErrors.ci && (
+                  <p className="text-red-500 text-sm mt-1">{formErrors.ci}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Rol *
+                </label>
+                <select
+                  value={formData.role}
+                  onChange={(e) => setFormData({...formData, role: e.target.value})}
+                  className={`w-full px-3 py-2 border rounded-lg ${
+                    formErrors.role ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                >
+                  <option value="">Seleccionar rol</option>
+                  <option value="operador">Operador</option>
+                  <option value="admin">Administrador</option>
+                  <option value="servicio">Servicio Técnico</option>
+                </select>
+                {formErrors.role && (
+                  <p className="text-red-500 text-sm mt-1">{formErrors.role}</p>
+                )}
+              </div>
+
+              {viewMode === 'add' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Contraseña *
+                  </label>
+                  <input
+                    type="password"
+                    value={formData.password || ''}
+                    onChange={(e) => setFormData({...formData, password: e.target.value})}
+                    className={`w-full px-3 py-2 border rounded-lg ${
+                      formErrors.password ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Contraseña temporal"
+                  />
+                  {formErrors.password && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.password}</p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">
+                    El usuario podrá cambiar su contraseña después
+                  </p>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Institución
+                </label>
+                <input
+                  type="text"
+                  value={formData.institucion || ''}
+                  onChange={(e) => setFormData({...formData, institucion: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  placeholder="Hospital o institución"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Celular
+                </label>
+                <input
+                  type="text"
+                  value={formData.celular || ''}
+                  onChange={(e) => setFormData({...formData, celular: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  placeholder="Número de celular"
+                />
+              </div>
             </div>
             <div className="flex space-x-3 mt-4">
               <button
                 onClick={handleSave}
-                className="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition"
+                disabled={loading}
+                className="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition disabled:bg-green-300"
               >
-                Guardar
+                {loading ? 'Guardando...' : 'Guardar'}
               </button>
               <button
                 onClick={handleCancel}
-                className="flex-1 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition"
+                disabled={loading}
+                className="flex-1 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition disabled:bg-gray-300"
               >
                 Cancelar
               </button>
@@ -217,6 +420,17 @@ const DashboardAdmin = () => {
 
     return null;
   };
+
+  if (loading && usuarios.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-plasma-primary mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando usuarios...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
@@ -236,13 +450,29 @@ const DashboardAdmin = () => {
               </p>
               <p className="text-gray-600">Acceso: Administrador</p>
             </div>
-            <button
-              onClick={handleLogout}
-              className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
-            >
-              Cerrar Sesión
-            </button>
+            <div className="flex space-x-3">
+              <button
+                onClick={cargarUsuarios}
+                disabled={loading}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition disabled:bg-blue-300"
+              >
+                {loading ? '🔄' : '🔄'} Actualizar
+              </button>
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+              >
+                Cerrar Sesión
+              </button>
+            </div>
           </div>
+          
+          {/* Mensaje de error */}
+          {error && (
+            <div className="mt-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded-lg">
+              {error}
+            </div>
+          )}
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
@@ -250,65 +480,88 @@ const DashboardAdmin = () => {
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white rounded-xl shadow-lg p-6">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">Manejo de Cuentas</h2>
+                <h2 className="text-2xl font-bold text-gray-800">
+                  Manejo de Cuentas ({usuarios.length} usuarios)
+                </h2>
                 <button
                   onClick={handleAñadirUsuario}
-                  className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
+                  disabled={loading}
+                  className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition disabled:bg-green-300"
                 >
                   + Añadir Usuario
                 </button>
               </div>
               
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-gray-50">
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Usuario</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Rol</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">CI</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {usuarios.map((usuario) => (
-                      <tr key={usuario.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3">
-                          <div>
-                            <p className="font-medium text-gray-800">{usuario.name}</p>
-                            <p className="text-sm text-gray-500">{usuario.email}</p>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">{getRoleBadge(usuario.role)}</td>
-                        <td className="px-4 py-3 text-gray-600">{usuario.ci}</td>
-                        <td className="px-4 py-3">
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => handleEditarUsuario(usuario)}
-                              className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition"
-                            >
-                              Editar
-                            </button>
-                            <button
-                              onClick={() => handleVerUsuario(usuario)}
-                              className="bg-gray-500 text-white px-3 py-1 rounded text-sm hover:bg-gray-600 transition"
-                            >
-                              Ver
-                            </button>
-                            {usuario.role !== 'admin' && (
-                              <button
-                                onClick={() => handleEliminarUsuario(usuario)}
-                                className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition"
-                              >
-                                Eliminar
-                              </button>
-                            )}
-                          </div>
-                        </td>
+              {usuarios.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 text-lg">No hay usuarios registrados</p>
+                  <p className="text-gray-400 text-sm">Usa el botón "Añadir Usuario" para comenzar</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Usuario</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Rol</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">CI</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Estado</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Acciones</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {usuarios.map((usuario) => (
+                        <tr key={usuario.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-3">
+                            <div>
+                              <p className="font-medium text-gray-800">{usuario.name}</p>
+                              <p className="text-sm text-gray-500">{usuario.email}</p>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">{getRoleBadge(usuario.role)}</td>
+                          <td className="px-4 py-3 text-gray-600">{usuario.ci}</td>
+                          <td className="px-4 py-3">
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              usuario.active 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-red-100 text-red-800'
+                            }`}>
+                              {usuario.active ? 'Activo' : 'Inactivo'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => handleEditarUsuario(usuario)}
+                                disabled={loading}
+                                className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition disabled:bg-blue-300"
+                              >
+                                Editar
+                              </button>
+                              <button
+                                onClick={() => handleVerUsuario(usuario)}
+                                disabled={loading}
+                                className="bg-gray-500 text-white px-3 py-1 rounded text-sm hover:bg-gray-600 transition disabled:bg-gray-300"
+                              >
+                                Ver
+                              </button>
+                              {usuario.role !== 'admin' && (
+                                <button
+                                  onClick={() => handleEliminarUsuario(usuario)}
+                                  disabled={loading}
+                                  className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition disabled:bg-red-300"
+                                >
+                                  Eliminar
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
 
@@ -393,13 +646,15 @@ const DashboardAdmin = () => {
             <div className="flex space-x-3">
               <button
                 onClick={confirmarEliminarUsuario}
-                className="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition"
+                disabled={loading}
+                className="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition disabled:bg-red-300"
               >
-                Sí, Eliminar
+                {loading ? 'Eliminando...' : 'Sí, Eliminar'}
               </button>
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition"
+                disabled={loading}
+                className="flex-1 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition disabled:bg-gray-300"
               >
                 Cancelar
               </button>

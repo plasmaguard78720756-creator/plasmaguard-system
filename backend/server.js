@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const userRoutes = require('./routes/users');
 require('dotenv').config();
 
 const app = express();
@@ -129,6 +130,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/sensors', sensorRoutes);
 app.use('/api/alerts', alertRoutes);
 app.use('/api/control', controlRoutes); 
+app.use('/api/users', userRoutes);
 
 // =====================================================
 // RUTAS MEJORADAS

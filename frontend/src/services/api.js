@@ -141,6 +141,32 @@ export const controlService = {
     const response = await api.post('/control/simulation-data', simulationData);
     return response.data;
   },
+
+   getAllUsers: async () => {
+    const response = await api.get('/users');
+    return response.data;
+  },
+
+  createUser: async (userData) => {
+    const response = await api.post('/users', userData);
+    return response.data;
+  },
+
+  updateUser: async (id, userData) => {
+    const response = await api.put(`/users/${id}`, userData);
+    return response.data;
+  },
+
+  deleteUser: async (id) => {
+    const response = await api.delete(`/users/${id}`);
+    return response.data;
+  },
+
+  // Función adicional para cambiar estado de usuario
+  toggleUserStatus: async (id, active) => {
+    const response = await api.patch(`/users/${id}/status`, { active });
+    return response.data;
+  }
 };
 
 export default api;
