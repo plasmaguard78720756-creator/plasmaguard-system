@@ -9,7 +9,6 @@ const DashboardAdmin = () => {
   
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
-
   // Datos de ejemplo SEGUROS
   const usuariosEjemplo = [
     { id: 1, name: 'Admin Temporal', email: 'admin@test.com', role: 'admin', ci: '1234567', active: true },
