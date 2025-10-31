@@ -1,14 +1,11 @@
-// backend/routes/users.js - NUEVO ARCHIVO
 const express = require('express');
 const router = express.Router();
 const supabase = require('../config/database');
 const { auth } = require('../middleware/auth');
 const bcrypt = require('bcryptjs');
 
-// GET: Obtener todos los usuarios (solo admin)
 router.get('/', auth, async (req, res) => {
   try {
-    // Verificar que el usuario sea admin
     if (req.user.role !== 'admin') {
       return res.status(403).json({ 
         success: false,
@@ -44,7 +41,6 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// POST: Crear nuevo usuario (solo admin)
 router.post('/', auth, async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
@@ -56,7 +52,6 @@ router.post('/', auth, async (req, res) => {
 
     const { name, email, password, role, ci, institucion, celular } = req.body;
 
-    // Validaciones básicas
     if (!name || !email || !password || !role || !ci) {
       return res.status(400).json({
         success: false,
@@ -64,7 +59,6 @@ router.post('/', auth, async (req, res) => {
       });
     }
 
-    // Verificar si el email ya existe
     const { data: existingEmail } = await supabase
       .from('users')
       .select('id')
@@ -78,7 +72,6 @@ router.post('/', auth, async (req, res) => {
       });
     }
 
-    // Verificar si el CI ya existe
     const { data: existingCI } = await supabase
       .from('users')
       .select('id')
@@ -92,10 +85,8 @@ router.post('/', auth, async (req, res) => {
       });
     }
 
-    // Hashear contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Insertar nuevo usuario
     const { data: newUser, error: insertError } = await supabase
       .from('users')
       .insert([{
@@ -134,7 +125,6 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// PUT: Actualizar usuario (solo admin)
 router.put('/:id', auth, async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
@@ -147,7 +137,6 @@ router.put('/:id', auth, async (req, res) => {
     const { id } = req.params;
     const { name, email, role, ci, institucion, celular, active } = req.body;
 
-    // Preparar datos para actualizar
     const updateData = {};
     if (name !== undefined) updateData.name = name;
     if (email !== undefined) updateData.email = email;
@@ -194,7 +183,6 @@ router.put('/:id', auth, async (req, res) => {
   }
 });
 
-// DELETE: Eliminar usuario (solo admin)
 router.delete('/:id', auth, async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
@@ -206,7 +194,6 @@ router.delete('/:id', auth, async (req, res) => {
 
     const { id } = req.params;
 
-    // Verificar que no sea el último admin
     const { data: user } = await supabase
       .from('users')
       .select('role')

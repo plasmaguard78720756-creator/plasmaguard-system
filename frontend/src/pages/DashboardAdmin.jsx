@@ -1,8 +1,7 @@
-// src/pages/DashboardAdmin.jsx - VERSIÓN CON DATOS REALES
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { userService } from '../services/api'; // NUEVO IMPORT
+import { userService } from '../services/api'; 
 
 const DashboardAdmin = () => {
   const navigate = useNavigate();
@@ -14,10 +13,9 @@ const DashboardAdmin = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [viewMode, setViewMode] = useState('view');
-  const [loading, setLoading] = useState(true); // NUEVO: Estado de carga
-  const [error, setError] = useState(''); // NUEVO: Manejo de errores
+  const [loading, setLoading] = useState(true); 
+  const [error, setError] = useState(''); 
 
-  // Datos de ejemplo para fallas y reportes (mantener por ahora)
   const fallasEjemplo = [
     { id: 1, tipo: 'Temperatura', fecha: '2024-01-20 10:30:00', accion: 'Reporte' },
     { id: 2, tipo: 'Humedad', fecha: '2024-01-20 09:15:00', accion: 'Nada' },
@@ -30,7 +28,6 @@ const DashboardAdmin = () => {
     { id: 3, enviado: '2024-01-20 08:50:00', visto: 'No visto', solucion: 'No' },
   ];
 
-  // Cargar datos reales de usuarios - NUEVA FUNCIÓN
   const cargarUsuarios = async () => {
     try {
       setLoading(true);
@@ -44,13 +41,11 @@ const DashboardAdmin = () => {
         setUsuarios(response.data);
       } else {
         setError('Error al cargar usuarios: ' + response.error);
-        // Mantener datos de ejemplo como fallback
         setUsuarios([]);
       }
     } catch (error) {
       console.error('❌ Error cargando usuarios:', error);
       setError('Error de conexión al cargar usuarios');
-      // Mantener array vacío en caso de error
       setUsuarios([]);
     } finally {
       setLoading(false);
@@ -58,7 +53,6 @@ const DashboardAdmin = () => {
   };
 
   useEffect(() => {
-    // Cargar datos iniciales
     cargarUsuarios();
     setFallas(fallasEjemplo);
     setReportes(reportesEjemplo);
@@ -84,7 +78,6 @@ const DashboardAdmin = () => {
     setShowDeleteConfirm(true);
   };
 
-  // NUEVA FUNCIÓN: Eliminar usuario de la base de datos
   const confirmarEliminarUsuario = async () => {
     if (!selectedUser) return;
 
@@ -93,7 +86,6 @@ const DashboardAdmin = () => {
       const response = await userService.deleteUser(selectedUser.id);
       
       if (response.success) {
-        // Actualizar lista localmente
         setUsuarios(usuarios.filter(u => u.id !== selectedUser.id));
         setShowDeleteConfirm(false);
         setSelectedUser(null);
@@ -114,22 +106,18 @@ const DashboardAdmin = () => {
     setViewMode('add');
   };
 
-  // NUEVA FUNCIÓN: Guardar usuario (crear o actualizar)
   const handleGuardarUsuario = async (formData) => {
     try {
       setLoading(true);
       
       let response;
       if (viewMode === 'add') {
-        // Crear nuevo usuario
         response = await userService.createUser(formData);
       } else {
-        // Actualizar usuario existente
         response = await userService.updateUser(selectedUser.id, formData);
       }
 
       if (response.success) {
-        // Recargar lista de usuarios
         await cargarUsuarios();
         setViewMode('view');
         setSelectedUser(null);
@@ -181,7 +169,6 @@ const DashboardAdmin = () => {
       : <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-medium">No</span>;
   };
 
-  // Componente para ver/editar/añadir usuario - ACTUALIZADO
   const UserForm = () => {
     const [formData, setFormData] = useState(
       selectedUser || { 
@@ -216,7 +203,6 @@ const DashboardAdmin = () => {
     const handleSave = () => {
       if (!validateForm()) return;
 
-      // Preparar datos para enviar
       const userData = {
         name: formData.name,
         email: formData.email,
@@ -226,9 +212,8 @@ const DashboardAdmin = () => {
         celular: formData.celular || ''
       };
 
-      // Solo incluir password si estamos creando nuevo usuario
       if (viewMode === 'add') {
-        userData.password = formData.password || 'password123'; // Contraseña por defecto
+        userData.password = formData.password || 'password123'; 
       }
 
       handleGuardarUsuario(userData);

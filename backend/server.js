@@ -8,19 +8,10 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// =====================================================
-// SISTEMA DE MONITOREO Y AUTORECONEXIÓN
-// =====================================================
-
 let lastDataReceived = Date.now();
 const DATA_TIMEOUT = 45000; // 45 segundos sin datos = problema (basado en tus 6.5 min)
 let totalDataReceived = 0;
 
-// =====================================================
-// MIDDLEWARE Y CONFIGURACIÓN - ORDEN CORREGIDO
-// =====================================================
-
-// 1. CORS PRIMERO - ESENCIAL para todas las requests
 app.use(cors({
   origin: [
     'http://localhost:5173',
@@ -33,16 +24,12 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key']
 }));
 
-// 2. Manejar explícitamente requests OPTIONS (preflight)
 app.options('*', cors());
 
-// 3. Seguridad
 app.use(helmet());
 
-// 4. Body parser
 app.use(express.json({ limit: '10mb' }));
 
-// 5. Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 1000,
@@ -57,7 +44,6 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// 6. Middleware para detectar datos del ESP32 (DESPUÉS de CORS)
 app.use('/api/sensors/data', (req, res, next) => {
   lastDataReceived = Date.now();
   totalDataReceived++;
@@ -65,11 +51,6 @@ app.use('/api/sensors/data', (req, res, next) => {
   next();
 });
 
-// =====================================================
-// FUNCIONES DE MONITOREO
-// =====================================================
-
-// Función de verificación periódica
 function checkDataFlow() {
   const timeSinceLastData = Date.now() - lastDataReceived;
   const secondsSinceLastData = Math.round(timeSinceLastData / 1000);
@@ -78,22 +59,18 @@ function checkDataFlow() {
     console.log(`🚨 ALERTA: No se reciben datos del ESP32 desde hace ${secondsSinceLastData} segundos`);
     console.log(`📈 Total de datos recibidos en esta sesión: ${totalDataReceived}`);
     
-    // Posibles causas a verificar
     if (secondsSinceLastData > 120) {
       console.log('🔍 Posible causa: ESP32 desconectado o sin WiFi');
     } else if (secondsSinceLastData > 60) {
       console.log('🔍 Posible causa: Problema de red o timeout');
     }
   } else if (timeSinceLastData > 20000) {
-    // Advertencia temprana
     console.log(`⚠️  Advertencia: Sin datos por ${secondsSinceLastData} segundos`);
   }
 }
 
-// Verificar cada 15 segundos
 setInterval(checkDataFlow, 15000);
 
-// Función para verificar conexión a Supabase
 async function checkSupabaseConnection() {
   try {
     const supabase = require('./config/database');
@@ -112,31 +89,19 @@ async function checkSupabaseConnection() {
   }
 }
 
-// Verificar conexión a BD cada 2 minutos
 setInterval(checkSupabaseConnection, 120000);
 
-// =====================================================
-// IMPORTAR Y USAR RUTAS
-// =====================================================
-
-// Importar rutas
 const authRoutes = require('./routes/auth');
 const sensorRoutes = require('./routes/sensors');
 const alertRoutes = require('./routes/alerts');
 const controlRoutes = require('./routes/control'); 
 
-// Usar rutas
 app.use('/api/auth', authRoutes);
 app.use('/api/sensors', sensorRoutes);
 app.use('/api/alerts', alertRoutes);
 app.use('/api/control', controlRoutes); 
 app.use('/api/users', userRoutes);
 
-// =====================================================
-// RUTAS MEJORADAS
-// =====================================================
-
-// Ruta de verificación de salud MEJORADA
 app.get('/api/health', (req, res) => {
   const timeSinceLastData = Date.now() - lastDataReceived;
   const secondsSinceLastData = Math.round(timeSinceLastData / 1000);
@@ -164,7 +129,6 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Ruta de bienvenida
 app.get('/', (req, res) => {
   const timeSinceLastData = Date.now() - lastDataReceived;
   const secondsSinceLastData = Math.round(timeSinceLastData / 1000);
@@ -188,7 +152,6 @@ app.get('/', (req, res) => {
   });
 });
 
-// Ruta para probar conexión con Supabase
 app.get('/api/test-db', async (req, res) => {
   try {
     const supabase = require('./config/database');
@@ -214,7 +177,6 @@ app.get('/api/test-db', async (req, res) => {
   }
 });
 
-// Ruta de diagnóstico del sistema
 app.get('/api/diagnostic', (req, res) => {
   const timeSinceLastData = Date.now() - lastDataReceived;
   
@@ -239,7 +201,6 @@ app.get('/api/diagnostic', (req, res) => {
   });
 });
 
-// Manejo de errores 404
 app.use('*', (req, res) => {
   res.status(404).json({ 
     error: 'Ruta no encontrada',
@@ -256,7 +217,6 @@ app.use('*', (req, res) => {
   });
 });
 
-// Manejo de errores global
 app.use((error, req, res, next) => {
   console.error('Error del servidor:', error);
   res.status(500).json({ 
@@ -265,10 +225,6 @@ app.use((error, req, res, next) => {
     timestamp: new Date().toISOString()
   });
 });
-
-// =====================================================
-// INICIO DEL SERVIDOR
-// =====================================================
 
 app.listen(PORT, () => {
   console.log(`\n🚀 Servidor ejecutándose en puerto ${PORT}`);
@@ -291,7 +247,7 @@ app.listen(PORT, () => {
   console.log(`   - Verificación BD cada 2 minutos`);
   console.log(`\n⚡ Listo para recibir datos del ESP32!`);
   console.log(`📊 Contador de datos iniciado: 0`);
-});". De test-register.js: "// backend/test-register.js
+});". De test-register.js: "
 const supabase = require('./config/database');
 
 async function testTable() {

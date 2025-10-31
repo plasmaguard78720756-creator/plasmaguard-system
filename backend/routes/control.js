@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../config/database');
 
-// GET: Obtener estado actual del control
 router.get('/status', async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -50,7 +49,6 @@ router.get('/status', async (req, res) => {
   }
 });
 
-// POST: Actualizar modo de operación
 router.post('/mode', async (req, res) => {
   try {
     const { operation_mode, user_id } = req.body;
@@ -65,7 +63,7 @@ router.post('/mode', async (req, res) => {
         operation_mode,
         updated_at: new Date().toISOString()
       })
-      .eq('id', 1)  // CLAÚSULA WHERE AGREGADA
+      .eq('id', 1)  
       .select()
       .single();
 
@@ -86,12 +84,10 @@ router.post('/mode', async (req, res) => {
   }
 });
 
-// POST: Control manual de focos
 router.post('/manual-lights', async (req, res) => {
   try {
     const { manual_light1, manual_light2, user_id } = req.body;
 
-    // Validar que estemos en modo manual
     const { data: currentMode } = await supabase
       .from('system_control')
       .select('operation_mode')
@@ -109,7 +105,7 @@ router.post('/manual-lights', async (req, res) => {
         updated_by: user_id,
         updated_at: new Date().toISOString()
       })
-      .eq('id', 1)  // CLAÚSULA WHERE AGREGADA
+      .eq('id', 1)  
       .select()
       .single();
 
@@ -130,7 +126,6 @@ router.post('/manual-lights', async (req, res) => {
   }
 });
 
-// POST: Configurar datos de simulación
 router.post('/simulation-data', async (req, res) => {
   try {
     const { 
@@ -141,7 +136,6 @@ router.post('/simulation-data', async (req, res) => {
       user_id 
     } = req.body;
 
-    // Validar que estemos en modo simulación
     const { data: currentMode } = await supabase
       .from('system_control')
       .select('operation_mode')
@@ -164,7 +158,7 @@ router.post('/simulation-data', async (req, res) => {
     const { data, error } = await supabase
       .from('system_control')
       .update(updateData)
-      .eq('id', 1)  // CLAÚSULA WHERE AGREGADA
+      .eq('id', 1) 
       .select()
       .single();
 

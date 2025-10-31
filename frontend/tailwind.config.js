@@ -9,7 +9,7 @@ export default {
     extend: {
       colors: {
         plasma: {
-          primary: '#1e40af',    // Azul profesional
+          primary: '#1e40af',    // Azul 
           secondary: '#dc2626',  // Rojo alerta
           success: '#16a34a',    // Verde éxito
           warning: '#d97706',    // Amarillo advertencia

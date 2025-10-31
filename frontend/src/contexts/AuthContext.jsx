@@ -1,4 +1,3 @@
-// src/contexts/AuthContext.jsx - VERSIÓN COMPLETA ACTUALIZADA
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { authService } from '../services/api';
 
@@ -17,7 +16,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Verificar token al cargar la app
   useEffect(() => {
     checkAuth();
   }, []);

@@ -1,16 +1,13 @@
-// backend/controllers/authController.js - COMPLETO Y CORREGIDO
 const supabase = require('../config/database');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Función para login de usuarios
 async function login(req, res) {
   try {
     const { email, password } = req.body;
 
     console.log('🔐 Intentando login para:', email);
 
-    // Buscar usuario por email O por CI
     const { data: user, error } = await supabase
       .from('users')
       .select('*')
@@ -26,7 +23,6 @@ async function login(req, res) {
       });
     }
 
-    // Verificar contraseña
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       console.log('🔴 Contraseña incorrecta');
@@ -36,7 +32,6 @@ async function login(req, res) {
       });
     }
 
-    // Generar token JWT
     const token = jwt.sign(
       { 
         id: user.id, 
@@ -50,7 +45,6 @@ async function login(req, res) {
 
     console.log(`✅ Login exitoso: ${user.name} (${user.role})`);
 
-    // Responder con token y datos del usuario (sin password)
     const userResponse = {
       id: user.id,
       name: user.name,
@@ -75,7 +69,6 @@ async function login(req, res) {
   }
 }
 
-// Función para registro de usuarios
 async function register(req, res) {
   try {
     const { 
@@ -85,7 +78,6 @@ async function register(req, res) {
 
     console.log('📝 Registrando nuevo usuario:', email);
 
-    // Validar campos requeridos
     if (!name || !email || !password || !role || !ci) {
       return res.status(400).json({
         success: false,
@@ -93,7 +85,6 @@ async function register(req, res) {
       });
     }
 
-    // Validar que el email no exista
     const { data: existingEmail, error: emailError } = await supabase
       .from('users')
       .select('id')
@@ -107,7 +98,6 @@ async function register(req, res) {
       });
     }
 
-    // Validar que el CI no exista
     const { data: existingCI, error: ciError } = await supabase
       .from('users')
       .select('id')
@@ -121,10 +111,8 @@ async function register(req, res) {
       });
     }
 
-    // Hashear contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Preparar datos para insertar
     const userData = {
       name,
       email,
@@ -134,13 +122,11 @@ async function register(req, res) {
       active: true
     };
 
-    // Agregar campos opcionales si existen
     if (fecha_nacimiento) userData.fecha_nacimiento = fecha_nacimiento;
     if (institucion) userData.institucion = institucion;
     if (celular) userData.celular = celular;
     if (direccion) userData.direccion = direccion;
 
-    // Insertar nuevo usuario
     const { data: newUser, error: insertError } = await supabase
       .from('users')
       .insert([userData])
@@ -157,7 +143,6 @@ async function register(req, res) {
 
     console.log('✅ Usuario registrado exitosamente:', newUser.email);
 
-    // No enviar password en la respuesta
     const { password: _, ...userWithoutPassword } = newUser;
 
     res.json({
@@ -175,10 +160,8 @@ async function register(req, res) {
   }
 }
 
-// Función para verificar token
 async function verifyToken(req, res) {
   try {
-    // El middleware de auth ya verificó el token y agregó el usuario a req.user
     res.json({
       success: true,
       valid: true,
@@ -195,7 +178,6 @@ async function verifyToken(req, res) {
   }
 }
 
-// Función para obtener perfil
 async function getProfile(req, res) {
   try {
     res.json({
@@ -212,7 +194,6 @@ async function getProfile(req, res) {
   }
 }
 
-// Exportar todas las funciones
 module.exports = {
   login,
   register,

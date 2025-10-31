@@ -1,4 +1,3 @@
-// src/pages/ReportarFalla.jsx - VERSIÓN COMPLETA
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -13,13 +12,12 @@ const ReportarFalla = () => {
   const [observaciones, setObservaciones] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Datos de ejemplo de la falla (luego vendrán del backend)
   const fallaDetalle = {
     id: parseInt(id),
     tipo: 'Temperatura',
     descripcion: 'Temperatura fuera de rango permitido',
     fecha: '2024-01-20 10:30:00',
-    valor_medido: '23.25°C', // ← Tu temperatura real actual
+    valor_medido: '23.25°C',
     valor_esperado: '-25°C a -35°C',
     sensor_afectado: 'PT100'
   };
@@ -35,7 +33,6 @@ const ReportarFalla = () => {
     setIsSubmitting(true);
 
     try {
-      // Simular envío al backend (luego será real)
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       alert('✅ Reporte enviado exitosamente al servicio técnico');

@@ -1,14 +1,11 @@
-// controllers/sensorController.js - VERSIÓN COMPLETA
 const supabase = require('../config/database');
 
-// Función para procesar datos del ESP32
 async function processSensorData(req, res) {
   try {
     console.log('🟢 INICIANDO processSensorData...');
     
     const { temperature, humidity, voltage, current } = req.body;
 
-    // Validaciones mejoradas
     if (temperature === undefined || humidity === undefined || 
         voltage === undefined || current === undefined) {
       console.log('🔴 Datos incompletos recibidos:', req.body);
@@ -18,7 +15,6 @@ async function processSensorData(req, res) {
       });
     }
 
-    // Validar rangos básicos
     if (temperature < -100 || temperature > 100) {
       return res.status(400).json({ error: 'Temperatura fuera de rango válido' });
     }
@@ -28,7 +24,6 @@ async function processSensorData(req, res) {
 
     console.log('📤 Datos del ESP32 validados:', { temperature, humidity, voltage, current });
 
-    // Guardar en base de datos
     console.log('💾 Guardando en Supabase...');
     const { data, error } = await supabase
       .from('sensor_data')
@@ -47,7 +42,6 @@ async function processSensorData(req, res) {
 
     console.log('✅ Datos guardados en Supabase - ID:', data[0]?.id);
 
-    // Verificar alertas (no bloqueante)
     console.log('🔍 Verificando alertas...');
     checkAlerts(temperature, humidity, voltage, current)
       .then(() => console.log('✅ Verificación de alertas completada'))
@@ -69,12 +63,10 @@ async function processSensorData(req, res) {
   }
 }
 
-// FUNCIÓN COMPLETA DE VERIFICACIÓN DE ALERTAS
 async function checkAlerts(temperature, humidity, voltage, current) {
   try {
     console.log('   🔍 Ejecutando checkAlerts...');
     
-    // Obtener configuraciones del sistema
     const { data: configs, error: configError } = await supabase
       .from('system_config')
       .select('*');
@@ -84,7 +76,6 @@ async function checkAlerts(temperature, humidity, voltage, current) {
       return;
     }
 
-    // Convertir configs a objeto fácil de usar
     const config = {};
     configs.forEach(item => {
       config[item.key] = parseFloat(item.value) || item.value;
@@ -92,7 +83,6 @@ async function checkAlerts(temperature, humidity, voltage, current) {
 
     const alerts = [];
 
-    // 1. ALERTAS DE TEMPERATURA
     if (temperature < config.temp_min || temperature > config.temp_max) {
       alerts.push({
         type: 'temperature',
@@ -103,7 +93,6 @@ async function checkAlerts(temperature, humidity, voltage, current) {
       });
     }
 
-    // 2. ALERTAS DE HUMEDAD
     if (humidity > config.humidity_max) {
       alerts.push({
         type: 'humidity',
@@ -114,18 +103,16 @@ async function checkAlerts(temperature, humidity, voltage, current) {
       });
     }
 
-    // 3. ALERTAS DE VOLTAJE
     if (voltage < config.voltage_min || voltage > config.voltage_max) {
       alerts.push({
         type: 'voltage',
         message: `Voltaje fuera de rango: ${voltage.toFixed(1)}V`,
-        severity: 'critical', // El voltaje siempre es crítico
+        severity: 'critical', 
         value: voltage,
         threshold: voltage < config.voltage_min ? config.voltage_min : config.voltage_max
       });
     }
 
-    // 4. ALERTAS DE CORRIENTE
     if (current > config.current_max) {
       alerts.push({
         type: 'current',
@@ -136,7 +123,6 @@ async function checkAlerts(temperature, humidity, voltage, current) {
       });
     }
 
-    // 5. ALERTA ESPECIAL: SENSOR DESCONECTADO (valores cero o fuera de rango extremo)
     if ((temperature === 0 && humidity === 0) || 
         (voltage === 0 && current === 0)) {
       alerts.push({
@@ -148,7 +134,6 @@ async function checkAlerts(temperature, humidity, voltage, current) {
       });
     }
 
-    // Insertar alertas si hay alguna
     if (alerts.length > 0) {
       console.log(`   🚨 Insertando ${alerts.length} alertas...`);
       const { error: alertError } = await supabase
@@ -172,7 +157,6 @@ async function checkAlerts(temperature, humidity, voltage, current) {
   }
 }
 
-// Función para obtener última lectura
 async function getLatestReading(req, res) {
   try {
     const { data, error } = await supabase

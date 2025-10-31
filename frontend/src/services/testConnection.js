@@ -1,15 +1,12 @@
-// src/services/testConnection.js
 import api from './api';
 
 export const testBackendConnection = async () => {
   try {
     console.log('🔍 Probando conexión con backend...');
     
-    // Test 1: Health endpoint
     const healthResponse = await api.get('/health');
     console.log('✅ Health Check:', healthResponse.data);
     
-    // Test 2: Database connection
     const dbResponse = await api.get('/test-db');
     console.log('✅ Database Test:', dbResponse.data);
     

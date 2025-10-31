@@ -1,4 +1,3 @@
-// src/pages/DashboardOperador.jsx - VERSIÓN CON DATOS REALES
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -18,7 +17,6 @@ const DashboardOperador = () => {
   });
   const [loading, setLoading] = useState(true);
 
-  // Cargar datos iniciales
   useEffect(() => {
     cargarDatosIniciales();
     const interval = setInterval(cargarDatosSensores, 5000);
@@ -50,7 +48,6 @@ const DashboardOperador = () => {
           corriente: response.data.current
         });
         
-        // Actualizar estado del plasma basado en datos reales
         actualizarEstadoPlasma(response.data);
       }
     } catch (error) {
@@ -77,7 +74,6 @@ const DashboardOperador = () => {
   };
 
   const actualizarEstadoPlasma = (datos) => {
-    // Lógica para determinar estado basado en umbrales reales
     const tempCritica = datos.temperature < -35 || datos.temperature > -25;
     const voltajeCritico = datos.voltage < 200 || datos.voltage > 240;
     const humedadCritica = datos.humidity > 70;

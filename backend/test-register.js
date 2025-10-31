@@ -1,4 +1,3 @@
-// backend/test-register.js
 const supabase = require('./config/database');
 
 async function testTable() {

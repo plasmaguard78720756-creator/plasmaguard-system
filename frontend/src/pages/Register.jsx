@@ -1,4 +1,3 @@
-// src/pages/Register.jsx - VERSIÓN COMPLETA CORREGIDA
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -7,7 +6,6 @@ const Register = () => {
   const navigate = useNavigate();
   const { register } = useAuth();
   const [formData, setFormData] = useState({
-    // Parte izquierda
     nombre: '',
     apellidoPaterno: '',
     apellidoMaterno: '',
@@ -17,7 +15,6 @@ const Register = () => {
     ci: '',
     tipoUsuario: '',
     
-    // Parte derecha
     institucion: '',
     celular: '',
     direccion: '',
@@ -30,7 +27,6 @@ const Register = () => {
   const [showVerification, setShowVerification] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
 
-  // Opciones para dropdowns
   const dias = Array.from({ length: 31 }, (_, i) => i + 1);
   const meses = [
     { value: '01', label: 'Enero' }, { value: '02', label: 'Febrero' },
@@ -49,7 +45,6 @@ const Register = () => {
       [name]: value
     }));
     
-    // Limpiar error del campo cuando el usuario escribe
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -113,7 +108,6 @@ const Register = () => {
   const validateForm = () => {
     const newErrors = {};
     
-    // Validar todos los campos
     Object.keys(formData).forEach(field => {
       const error = validateField(field, formData[field]);
       if (error) {
@@ -121,7 +115,6 @@ const Register = () => {
       }
     });
 
-    // Validar fecha de nacimiento
     if (!formData.dia || !formData.mes || !formData.ano) {
       newErrors.fecha = 'La fecha de nacimiento es requerida';
     } else {
@@ -131,7 +124,6 @@ const Register = () => {
       }
     }
 
-    // Validar tipo de usuario
     if (!formData.tipoUsuario) {
       newErrors.tipoUsuario = 'Selecciona un tipo de usuario';
     }
@@ -144,11 +136,9 @@ const Register = () => {
     e.preventDefault();
     
     if (validateForm()) {
-      // Mostrar modal de verificación para Admin y Servicio Técnico
       if (formData.tipoUsuario === 'admin' || formData.tipoUsuario === 'servicio') {
         setShowVerification(true);
       } else {
-        // Operador - registro directo
         handleRegistrationSuccess();
       }
     }
@@ -168,7 +158,6 @@ const Register = () => {
 
   const handleRegistrationSuccess = async () => {
     try {
-      // Preparar datos para el backend
       const userData = {
         name: `${formData.nombre} ${formData.apellidoPaterno} ${formData.apellidoMaterno}`,
         email: formData.correo,

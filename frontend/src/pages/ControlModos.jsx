@@ -1,4 +1,3 @@
-// src/pages/ControlModos.jsx - VERSIÓN CON CONTROL REAL
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -29,7 +28,6 @@ const ControlModos = () => {
   const [mensaje, setMensaje] = useState('');
   const [cargandoEstado, setCargandoEstado] = useState(true);
 
-  // Cargar estado actual del sistema
   useEffect(() => {
     cargarEstadoSistema();
     const interval = setInterval(cargarDatosReales, 5000);
@@ -44,10 +42,8 @@ const ControlModos = () => {
         sensorService.getLatestData()
       ]);
 
-      // Configurar modo de operación
       setModoOperacion(controlResponse.operation_mode);
       
-      // Configurar datos de simulación
       setDatosSimulacion({
         temperatura: controlResponse.simulated_temperature || -25.0,
         humedad: controlResponse.simulated_humidity || 45.0,
@@ -55,13 +51,11 @@ const ControlModos = () => {
         corriente: controlResponse.simulated_current || 2.0
       });
 
-      // Configurar control manual
       setControlManual({
         focoNormal: controlResponse.manual_light1 || false,
         focoAlerta: controlResponse.manual_light2 || false
       });
 
-      // Configurar datos reales
       if (sensoresResponse.data && !sensoresResponse.empty) {
         setDatosReales({
           temperatura: sensoresResponse.data.temperature,
@@ -109,7 +103,6 @@ const ControlModos = () => {
         setModoOperacion(nuevoModo);
         setMensaje(`✅ ${response.message}`);
         
-        // Si se cambia a automático, resetear controles manuales
         if (nuevoModo === 'auto') {
           setControlManual({ focoNormal: false, focoAlerta: false });
         }
@@ -199,7 +192,6 @@ const ControlModos = () => {
   };
 
   const handleVolver = () => {
-    // Al volver, activar modo automático por seguridad
     if (modoOperacion !== 'auto') {
       handleCambiarModo('auto');
     }

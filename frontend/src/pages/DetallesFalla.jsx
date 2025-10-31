@@ -1,4 +1,3 @@
-// src/pages/DetallesFalla.jsx - VERSIÓN COMPLETA
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -6,9 +5,8 @@ import { useAuth } from '../contexts/AuthContext';
 const DetallesFalla = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { id } = useParams(); // Obtener el ID de la falla de la URL
+  const { id } = useParams(); 
 
-  // Datos de ejemplo de la falla (luego vendrán del backend)
   const fallaDetalle = {
     id: parseInt(id),
     tipo: 'Temperatura',

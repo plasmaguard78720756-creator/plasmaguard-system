@@ -1,4 +1,3 @@
-// backend/middleware/auth.js
 const jwt = require('jsonwebtoken');
 const supabase = require('../config/database');
 
@@ -12,10 +11,8 @@ const auth = async (req, res, next) => {
       });
     }
 
-    // Verificar token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
-    // Verificar que el usuario existe y está activo
     const { data: user, error } = await supabase
       .from('users')
       .select('id, name, email, role, active, ci')
@@ -29,7 +26,6 @@ const auth = async (req, res, next) => {
       });
     }
 
-    // Agregar usuario al request
     req.user = user;
     next();
 

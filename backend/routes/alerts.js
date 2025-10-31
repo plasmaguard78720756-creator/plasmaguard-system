@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../config/database');
 
-// GET: Obtener alertas activas
 router.get('/active', async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -27,7 +26,6 @@ router.get('/active', async (req, res) => {
   }
 });
 
-// GET: Obtener todas las alertas
 router.get('/', async (req, res) => {
   try {
     const { limit = 50 } = req.query;
@@ -55,7 +53,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST: Marcar alerta como reconocida
 router.post('/:id/acknowledge', async (req, res) => {
   try {
     const { id } = req.params;

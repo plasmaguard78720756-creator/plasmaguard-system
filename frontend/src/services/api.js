@@ -1,7 +1,6 @@
-// src/services/api.js - VERSIÓN CORREGIDA
 import axios from 'axios';
 
-// ✅ USAR VARIABLE DE ENTORNO en lugar de URL hardcodeada
+// USAR VARIABLE DE ENTORNO en lugar de URL hardcodeada
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 const api = axios.create({
@@ -11,7 +10,6 @@ const api = axios.create({
   },
 });
 
-// Interceptor para agregar token automáticamente
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('plasmaguard_token');

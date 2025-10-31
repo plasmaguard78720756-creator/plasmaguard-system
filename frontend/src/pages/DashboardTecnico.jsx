@@ -1,4 +1,3 @@
-// src/pages/DashboardTecnico.jsx - VERSIÓN CON DATOS REALES
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -18,10 +17,9 @@ const DashboardTecnico = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Cargar datos iniciales
   useEffect(() => {
     cargarDatosIniciales();
-    const interval = setInterval(cargarDatosSensores, 5000); // Actualizar cada 5 segundos
+    const interval = setInterval(cargarDatosSensores, 5000); 
     return () => clearInterval(interval);
   }, []);
 
@@ -59,7 +57,6 @@ const DashboardTecnico = () => {
   const cargarAlertasActivas = async () => {
     try {
       const response = await alertService.getActiveAlerts();
-      // Convertir alertas a formato de reportes
       const reportesFromAlerts = response.data.map(alerta => ({
         id: alerta.id,
         operador: 'Sistema Automático',

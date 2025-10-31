@@ -1,4 +1,3 @@
-// src/pages/VerificacionAdmin.jsx - VERSIÓN COMPLETA
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -13,7 +12,6 @@ const VerificacionAdmin = () => {
   const [error, setError] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
 
-  // Obtener datos del usuario de la navegación o del contexto
   const userData = location.state?.user || user;
 
   const handleVerification = async (e) => {
@@ -27,18 +25,15 @@ const VerificacionAdmin = () => {
     setIsVerifying(true);
     setError('');
 
-    // Simular verificación (luego será con backend)
     setTimeout(() => {
       const nuevoIntento = intentos + 1;
       setIntentos(nuevoIntento);
 
       if (codigo === 'PlasmaGuard1230') {
-        // Código correcto - redirigir al dashboard admin
         navigate('/admin/dashboard', { 
           state: { user: userData, verified: true }
         });
       } else {
-        // Código incorrecto
         if (nuevoIntento >= 3) {
           setError('❌ Demasiados intentos fallidos. No puedes ingresar a este espacio.');
           setTimeout(() => {
@@ -46,7 +41,7 @@ const VerificacionAdmin = () => {
           }, 3000);
         } else {
           setError(`❌ Código incorrecto. Intentos restantes: ${3 - nuevoIntento}`);
-          setCodigo(''); // Limpiar campo
+          setCodigo(''); 
         }
       }
       

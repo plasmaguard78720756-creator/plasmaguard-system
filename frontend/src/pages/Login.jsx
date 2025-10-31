@@ -1,4 +1,3 @@
-// src/pages/Login.jsx - VERSIÓN COMPLETA
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -15,7 +14,6 @@ const Login = () => {
   const [attempts, setAttempts] = useState(0);
   const [error, setError] = useState('');
 
-  // Datos del menú desplegable
   const menuOptions = {
     plasma: {
       title: "Plasma Fresco Congelado",
@@ -49,16 +47,14 @@ const Login = () => {
       ...prev,
       [name]: value
     }));
-    // Limpiar error cuando el usuario empiece a escribir
     if (error) setError('');
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
   
-    console.log('🔍 Iniciando login...', loginData); // ← AGREGAR
+    console.log('🔍 Iniciando login...', loginData); 
   
-    // Validaciones básicas
     if (!loginData.userId.trim() || !loginData.password.trim()) {
       setError('Por favor completa todos los campos');
       return;
@@ -73,23 +69,21 @@ const Login = () => {
     }
 
     try {
-      // Llamada real al backend
       const credentials = {
         email: loginData.userId,
         password: loginData.password
       };
 
-      console.log('🔍 Enviando credenciales...', credentials); // ← AGREGAR
+      console.log('🔍 Enviando credenciales...', credentials); 
     
       const result = await login(credentials);
     
-      console.log('🔍 Resultado del login:', result); // ← AGREGAR
+      console.log('🔍 Resultado del login:', result); 
     
       if (result.success) {
-        console.log('🔍 Usuario autenticado:', result.user); // ← AGREGAR
-        console.log('🔍 Rol del usuario:', result.user.role); // ← AGREGAR
+        console.log('🔍 Usuario autenticado:', result.user); 
+        console.log('🔍 Rol del usuario:', result.user.role); 
       
-        // Redirigir según el rol del usuario
         switch (result.user.role) {
           case 'operador':
             console.log('🔍 Redirigiendo a operador dashboard');
@@ -112,7 +106,7 @@ const Login = () => {
             navigate('/');
         }
       } else {
-        console.log('🔍 Error en login:', result.error); // ← AGREGAR
+        console.log('🔍 Error en login:', result.error); 
         setError(result.error);
         setLoginData({
           userId: '',
@@ -120,7 +114,7 @@ const Login = () => {
         });
       }
     } catch (error) {
-      console.log('🔍 Error de conexión:', error); // ← AGREGAR
+      console.log('🔍 Error de conexión:', error); 
       setError('Error de conexión con el servidor');
       setLoginData({
         userId: '',

@@ -1,15 +1,12 @@
-// backend/routes/sensors.js - VERSIÓN CON LOGS DE DIAGNÓSTICO
 const express = require('express');
 const router = express.Router();
 const sensorController = require('../controllers/sensorController');
 
-// Middleware ROBUSTO con timeout y manejo de errores
 const verifyApiKey = (req, res, next) => {
-  // Usar setTimeout para evitar bloqueos infinitos
   const timeout = setTimeout(() => {
     console.log('🔐 ⏰ Timeout en verifyApiKey - permitiendo continuar por seguridad');
     next();
-  }, 1000); // 1 segundo de timeout
+  }, 1000); 
 
   try {
     const apiKey = req.headers['x-api-key'];
@@ -33,20 +30,17 @@ const verifyApiKey = (req, res, next) => {
   } catch (error) {
     console.log('🔐 🔴 Error en verifyApiKey:', error);
     clearTimeout(timeout);
-    next(); // En caso de error, permitir continuar por seguridad
+    next(); 
   }
 };
 
-// POST: Recibir datos del ESP32 (usando controller) - CON LOGS
 router.post('/data', verifyApiKey, (req, res, next) => {
   console.log('🟢 Ruta /api/sensors/data alcanzada - Ejecutando controller...');
   sensorController.processSensorData(req, res, next);
 });
 
-// GET: Obtener últimas lecturas (usando controller)
 router.get('/latest', sensorController.getLatestReading);
 
-// GET: Obtener histórico de datos (mantener esta lógica aquí o mover a controller)
 router.get('/history', async (req, res) => {
   try {
     const { limit = 100, hours = 24 } = req.query;
@@ -75,13 +69,11 @@ router.get('/history', async (req, res) => {
   }
 });
 
-// GET: Estadísticas de datos (nueva ruta útil)
 router.get('/stats', async (req, res) => {
   try {
     const { hours = 24 } = req.query;
     const supabase = require('../config/database');
 
-    // Obtener datos del período
     const { data, error } = await supabase
       .from('sensor_data')
       .select('temperature, humidity, voltage, current, created_at')
@@ -100,7 +92,6 @@ router.get('/stats', async (req, res) => {
       });
     }
 
-    // Calcular estadísticas básicas
     const stats = {
       temperature: calculateStats(data.map(d => d.temperature)),
       humidity: calculateStats(data.map(d => d.humidity)),
@@ -122,7 +113,6 @@ router.get('/stats', async (req, res) => {
   }
 });
 
-// Función auxiliar para calcular estadísticas
 function calculateStats(values) {
   if (values.length === 0) return { min: 0, max: 0, avg: 0 };
   
@@ -138,12 +128,10 @@ function calculateStats(values) {
   };
 }
 
-// GET: Estado de sensores (nueva ruta útil)
 router.get('/status', async (req, res) => {
   try {
     const supabase = require('../config/database');
     
-    // Obtener última lectura
     const { data: lastReading, error: readingError } = await supabase
       .from('sensor_data')
       .select('created_at')
@@ -151,7 +139,6 @@ router.get('/status', async (req, res) => {
       .limit(1)
       .single();
 
-    // Obtener cantidad de lecturas hoy
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
@@ -177,11 +164,10 @@ router.get('/status', async (req, res) => {
       timestamp: new Date().toISOString()
     };
 
-    // Determinar estado basado en la antigüedad de los datos
     if (!lastReading) {
       status.system = 'no_data';
       status.message = 'Esperando primera lectura del ESP32';
-    } else if (status.data_age > 60) { // Más de 60 segundos sin datos
+    } else if (status.data_age > 60) { 
       status.system = 'warning';
       status.message = 'Posible desconexión del ESP32';
     } else {
