@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const supabase = require('../config/database');
-const alertController = require('../controllers/alertController');
 
 // Obtener alertas activas (CON AGRUPACIÓN INTELIGENTE)
 router.get('/active', async (req, res) => {
@@ -108,53 +107,29 @@ router.post('/:id/acknowledge', async (req, res) => {
   }
 });
 
-// Enviar reporte por email (NUEVA RUTA OPCIONAL)
+// Enviar reporte por email (RUTA SIMULADA - SIN nodemailer)
 router.post('/send-email-report', async (req, res) => {
   try {
     const { reporteId, destinatarios, asunto, mensaje } = req.body;
 
-    // Verificar si el email está configurado
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      return res.status(400).json({
-        success: false,
-        error: 'Servicio de email no configurado',
-        message: 'Configure las variables de entorno EMAIL_USER y EMAIL_PASS'
-      });
-    }
-
-    // Obtener datos del reporte
-    const { data: reporte, error } = await supabase
-      .from('reportes_operadores')
-      .select(`
-        *,
-        fallas_globales (*),
-        users!reportes_operadores_operador_id_fkey (name, email)
-      `)
-      .eq('id', reporteId)
-      .single();
-
-    if (error || !reporte) {
-      return res.status(404).json({
-        success: false,
-        error: 'Reporte no encontrado'
-      });
-    }
-
-    // Construir y enviar email (aquí iría la lógica de nodemailer)
-    // Por ahora simulamos el envío
-    console.log('📧 Simulando envío de email para reporte:', reporteId);
+    // Simular envío de email sin dependencias externas
+    console.log('📧 Simulando envío de email:');
+    console.log('   Reporte ID:', reporteId);
+    console.log('   Destinatarios:', destinatarios);
+    console.log('   Asunto:', asunto);
     
     res.json({
       success: true,
-      message: 'Reporte enviado por email correctamente (simulación)',
-      reporteId: reporteId
+      message: 'Reporte preparado para envío por email (servicio simulado)',
+      reporteId: reporteId,
+      simulacion: true
     });
 
   } catch (error) {
-    console.error('Error enviando email:', error);
+    console.error('Error en envío de email simulado:', error);
     res.status(500).json({
       success: false,
-      error: 'Error al enviar el email'
+      error: 'Error en servicio de email simulado'
     });
   }
 });
