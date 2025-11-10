@@ -100,22 +100,35 @@ export const sensorService = {
   },
 };
 
-// Servicios de alertas
+// Servicios de alertas MEJORADOS (con parámetros para filtros inteligentes)
 export const alertService = {
-  getActiveAlerts: async () => {
-    const response = await api.get('/alerts/active');
+  getActiveAlerts: async (params = {}) => {
+    const response = await api.get('/alerts/active', { params });
     return response.data;
   },
 
-  getAllAlerts: async (params) => {
+  getAllAlerts: async (params = {}) => {
     const response = await api.get('/alerts', { params });
     return response.data;
   },
 
-  acknowledgeAlert: async (id) => {
-    const response = await api.post(`/alerts/${id}/acknowledge`);
+  acknowledgeAlert: async (id, userId = null) => {
+    const data = userId ? { user_id: userId } : {};
+    const response = await api.post(`/alerts/${id}/acknowledge`, data);
     return response.data;
   },
+
+  // Nuevo método para obtener estadísticas de alertas
+  getAlertStats: async (hours = 24) => {
+    const response = await api.get('/alerts/active', { params: { hours } });
+    return response.data.stats || {};
+  },
+
+  // Nuevo método para enviar reportes por email (OPCIONAL)
+  sendEmailReport: async (reportData) => {
+    const response = await api.post('/alerts/send-email-report', reportData);
+    return response.data;
+  }
 };
 
 // Servicios de control
