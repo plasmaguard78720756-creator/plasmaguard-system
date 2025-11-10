@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { testBackendConnection } from '../services/testConnection';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -243,44 +242,19 @@ const Login = () => {
                 </div>
 
                 <div className="space-y-4 pt-4">
-                  
+                  <button 
+                   type="submit"
+                   className="w-full bg-plasma-primary text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-200 font-medium shadow-md hover:shadow-lg"
+                  >
+                   Ingresar
+                  </button>
+  
                   <button 
                    type="button"
-                   onClick={() => {
-                    console.log('🔍 Probando redirección manual a admin...');
-                   navigate('/admin/verificar', { 
-                       state: { user: { name: 'Admin Test', role: 'admin' } } 
-                    });
-                   }}
-                   className="w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition mb-2"
+                   onClick={handleCreateAccount}
+                   className="w-full bg-gray-200 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-300 transition duration-200 font-medium"
                   >
-                  🔧 Probar Redirección Admin (Temporal)
-                  </button>
-
-                  <button 
-                  type="button"
-                   onClick={async () => {
-                    const result = await testBackendConnection();
-                   alert(result.success ? '✅ Conexión exitosa' : '❌ Error: ' + result.error);
-                   }}
-                   className="w-full bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-600 transition mb-2"
-                  >
-                  🔧 Probar Conexión Backend
-                  </button>
-
-                  <button 
-                    type="submit"
-                    className="w-full bg-plasma-primary text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-200 font-medium shadow-md hover:shadow-lg"
-                  >
-                    Ingresar
-                  </button>
-                  
-                  <button 
-                    type="button"
-                    onClick={handleCreateAccount}
-                    className="w-full bg-gray-200 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-300 transition duration-200 font-medium"
-                  >
-                    Crear Cuenta Nueva
+                   Crear Cuenta Nueva
                   </button>
                 </div>
               </form>
