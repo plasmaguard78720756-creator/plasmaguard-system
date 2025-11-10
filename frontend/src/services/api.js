@@ -82,22 +82,36 @@ export const userService = {
   },
 };
 
-// Servicios de sensores
+// Servicios de sensores (ACTUALIZADOS para gráficas)
 export const sensorService = {
   getLatestData: async () => {
     const response = await api.get('/sensors/latest');
     return response.data;
   },
 
-  getHistory: async (params) => {
+  getHistory: async (params = {}) => {
     const response = await api.get('/sensors/history', { params });
     return response.data;
   },
 
-  getStats: async (params) => {
+  getStats: async (params = {}) => {
     const response = await api.get('/sensors/stats', { params });
     return response.data;
   },
+
+  // Nuevo método para datos de gráficas optimizados
+  getChartData: async (hours = 24, limit = 100) => {
+    const response = await api.get('/sensors/history', { 
+      params: { hours, limit } 
+    });
+    return response.data;
+  },
+
+  // Método para obtener estado del sistema
+  getSystemStatus: async () => {
+    const response = await api.get('/sensors/status');
+    return response.data;
+  }
 };
 
 // Servicios de alertas MEJORADOS (con parámetros para filtros inteligentes)
@@ -124,7 +138,7 @@ export const alertService = {
     return response.data.stats || {};
   },
 
-  // Nuevo método para enviar reportes por email (OPCIONAL)
+  // Nuevo método para enviar reportes por email (OPCIONAL - simulado)
   sendEmailReport: async (reportData) => {
     const response = await api.post('/alerts/send-email-report', reportData);
     return response.data;
@@ -153,7 +167,7 @@ export const controlService = {
     return response.data;
   },
 
-   getAllUsers: async () => {
+  getAllUsers: async () => {
     const response = await api.get('/users');
     return response.data;
   },
@@ -177,6 +191,52 @@ export const controlService = {
   toggleUserStatus: async (id, active) => {
     const response = await api.patch(`/users/${id}/status`, { active });
     return response.data;
+  }
+};
+
+// Servicios del sistema (NUEVOS)
+export const systemService = {
+  // Verificar salud del sistema
+  getHealth: async () => {
+    const response = await api.get('/health');
+    return response.data;
+  },
+
+  // Obtener diagnóstico del sistema
+  getDiagnostic: async () => {
+    const response = await api.get('/diagnostic');
+    return response.data;
+  },
+
+  // Probar conexión con la base de datos
+  testDatabase: async () => {
+    const response = await api.get('/test-db');
+    return response.data;
+  }
+};
+
+// Función de utilidad para probar conexión
+export const testBackendConnection = async () => {
+  try {
+    console.log('🔍 Probando conexión con backend...');
+    
+    const healthResponse = await systemService.getHealth();
+    console.log('✅ Health Check:', healthResponse);
+    
+    const dbResponse = await systemService.testDatabase();
+    console.log('✅ Database Test:', dbResponse);
+    
+    return { 
+      success: true, 
+      health: healthResponse, 
+      db: dbResponse 
+    };
+  } catch (error) {
+    console.error('❌ Error de conexión:', error.message);
+    return { 
+      success: false, 
+      error: error.message 
+    };
   }
 };
 

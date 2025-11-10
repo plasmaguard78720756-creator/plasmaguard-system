@@ -1,189 +1,198 @@
 const express = require('express');
 const router = express.Router();
+const supabase = require('../config/database');
 const sensorController = require('../controllers/sensorController');
 
-const verifyApiKey = (req, res, next) => {
-  const timeout = setTimeout(() => {
-    console.log('🔐 ⏰ Timeout en verifyApiKey - permitiendo continuar por seguridad');
-    next();
-  }, 1000); 
+// Ruta para recibir datos del ESP32
+router.post('/data', sensorController.processSensorData);
 
-  try {
-    const apiKey = req.headers['x-api-key'];
-    
-    if (!apiKey) {
-      console.log('🔐 ❌ No se recibió API Key');
-      clearTimeout(timeout);
-      return res.status(401).json({ error: 'API key requerida' });
-    }
-    
-    if (apiKey !== process.env.API_KEY) {
-      console.log('🔐 ❌ API Key incorrecta');
-      clearTimeout(timeout);
-      return res.status(401).json({ error: 'API key inválida' });
-    }
-    
-    console.log('🔐 ✅ API Key válida');
-    clearTimeout(timeout);
-    next();
-    
-  } catch (error) {
-    console.log('🔐 🔴 Error en verifyApiKey:', error);
-    clearTimeout(timeout);
-    next(); 
-  }
-};
-
-router.post('/data', verifyApiKey, (req, res, next) => {
-  console.log('🟢 Ruta /api/sensors/data alcanzada - Ejecutando controller...');
-  sensorController.processSensorData(req, res, next);
-});
-
+// Obtener última lectura
 router.get('/latest', sensorController.getLatestReading);
 
+// Obtener histórico de datos (NUEVA RUTA MEJORADA)
 router.get('/history', async (req, res) => {
   try {
-    const { limit = 100, hours = 24 } = req.query;
+    const { 
+      hours = 24, 
+      days, 
+      limit = 100,
+      sensor,
+      start_date,
+      end_date
+    } = req.query;
 
-    const supabase = require('../config/database');
-    const { data, error } = await supabase
+    let query = supabase
       .from('sensor_data')
       .select('*')
-      .gte('created_at', new Date(Date.now() - hours * 60 * 60 * 1000).toISOString())
-      .order('created_at', { ascending: false })
-      .limit(parseInt(limit));
+      .order('created_at', { ascending: true });
+
+    // Calcular fecha de inicio basada en horas o días
+    let startDate = new Date();
+    if (days) {
+      startDate.setDate(startDate.getDate() - parseInt(days));
+    } else {
+      startDate.setHours(startDate.getHours() - parseInt(hours));
+    }
+
+    query = query.gte('created_at', startDate.toISOString());
+
+    // Filtro por fechas específicas si se proporcionan
+    if (start_date && end_date) {
+      query = query
+        .gte('created_at', new Date(start_date).toISOString())
+        .lte('created_at', new Date(end_date).toISOString());
+    }
+
+    // Limitar resultados
+    if (limit) {
+      query = query.limit(parseInt(limit));
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error obteniendo histórico:', error);
-      return res.status(500).json({ error: 'Error al obtener histórico' });
+      return res.status(500).json({ 
+        success: false,
+        error: 'Error al obtener histórico de datos' 
+      });
     }
 
-    res.json({ 
-      data,
-      count: data ? data.length : 0
+    // Calcular estadísticas si se solicita
+    const stats = calculateSensorStats(data);
+
+    res.json({
+      success: true,
+      data: data,
+      count: data.length,
+      stats: stats,
+      period: {
+        start: startDate.toISOString(),
+        end: new Date().toISOString(),
+        hours: parseInt(hours),
+        days: days ? parseInt(days) : null
+      }
     });
 
   } catch (error) {
     console.error('Error en /api/sensors/history:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Error interno del servidor' 
+    });
   }
 });
 
+// Obtener estadísticas de sensores (NUEVA RUTA)
 router.get('/stats', async (req, res) => {
   try {
-    const { hours = 24 } = req.query;
-    const supabase = require('../config/database');
+    const { hours = 24, days } = req.query;
+
+    let startDate = new Date();
+    if (days) {
+      startDate.setDate(startDate.getDate() - parseInt(days));
+    } else {
+      startDate.setHours(startDate.getHours() - parseInt(hours));
+    }
 
     const { data, error } = await supabase
       .from('sensor_data')
-      .select('temperature, humidity, voltage, current, created_at')
-      .gte('created_at', new Date(Date.now() - hours * 60 * 60 * 1000).toISOString())
+      .select('*')
+      .gte('created_at', startDate.toISOString())
       .order('created_at', { ascending: true });
 
     if (error) {
       console.error('Error obteniendo stats:', error);
-      return res.status(500).json({ error: 'Error al obtener estadísticas' });
-    }
-
-    if (!data || data.length === 0) {
-      return res.json({
-        message: 'No hay datos en el período seleccionado',
-        data: []
+      return res.status(500).json({ 
+        success: false,
+        error: 'Error al obtener estadísticas' 
       });
     }
 
-    const stats = {
-      temperature: calculateStats(data.map(d => d.temperature)),
-      humidity: calculateStats(data.map(d => d.humidity)),
-      voltage: calculateStats(data.map(d => d.voltage)),
-      current: calculateStats(data.map(d => d.current)),
-      total_readings: data.length,
-      period_hours: hours
-    };
+    const stats = calculateSensorStats(data);
 
     res.json({
       success: true,
-      stats,
-      period: `${hours} horas`
+      stats: stats,
+      period: {
+        start: startDate.toISOString(),
+        end: new Date().toISOString(),
+        hours: parseInt(hours),
+        days: days ? parseInt(days) : null
+      },
+      summary: {
+        total_readings: data.length,
+        data_density: calculateDataDensity(data, hours)
+      }
     });
 
   } catch (error) {
     console.error('Error en /api/sensors/stats:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Error interno del servidor' 
+    });
   }
 });
 
-function calculateStats(values) {
-  if (values.length === 0) return { min: 0, max: 0, avg: 0 };
+// Función para calcular estadísticas de sensores
+function calculateSensorStats(data) {
+  if (!data || data.length === 0) {
+    return {
+      temperature: { min: 0, max: 0, avg: 0, current: 0 },
+      humidity: { min: 0, max: 0, avg: 0, current: 0 },
+      voltage: { min: 0, max: 0, avg: 0, current: 0 },
+      current: { min: 0, max: 0, avg: 0, current: 0 }
+    };
+  }
+
+  const stats = {
+    temperature: calculateSensorStatsForType(data, 'temperature', '°C'),
+    humidity: calculateSensorStatsForType(data, 'humidity', '%'),
+    voltage: calculateSensorStatsForType(data, 'voltage', 'V'),
+    current: calculateSensorStatsForType(data, 'current', 'A')
+  };
+
+  return stats;
+}
+
+function calculateSensorStatsForType(data, type, unit) {
+  const values = data.map(item => item[type]).filter(val => val != null);
   
+  if (values.length === 0) {
+    return { min: 0, max: 0, avg: 0, current: 0, unit };
+  }
+
   const min = Math.min(...values);
   const max = Math.max(...values);
-  const avg = values.reduce((a, b) => a + b, 0) / values.length;
-  
+  const avg = values.reduce((sum, val) => sum + val, 0) / values.length;
+  const current = values[values.length - 1];
+
+  // Calcular tendencia
+  const recentValues = values.slice(-10); // Últimas 10 lecturas
+  const trend = recentValues.length >= 2 
+    ? recentValues[recentValues.length - 1] - recentValues[0]
+    : 0;
+
   return {
     min: parseFloat(min.toFixed(2)),
     max: parseFloat(max.toFixed(2)),
     avg: parseFloat(avg.toFixed(2)),
-    count: values.length
+    current: parseFloat(current.toFixed(2)),
+    trend: parseFloat(trend.toFixed(2)),
+    unit,
+    readings: values.length
   };
 }
 
-router.get('/status', async (req, res) => {
-  try {
-    const supabase = require('../config/database');
-    
-    const { data: lastReading, error: readingError } = await supabase
-      .from('sensor_data')
-      .select('created_at')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const { data: todayReadings, error: countError } = await supabase
-      .from('sensor_data')
-      .select('id', { count: 'exact' })
-      .gte('created_at', today.toISOString());
-
-    if (readingError && readingError.code !== 'PGRST116') {
-      console.error('Error obteniendo status:', readingError);
-    }
-
-    if (countError) {
-      console.error('Error contando lecturas:', countError);
-    }
-
-    const status = {
-      system: 'online',
-      last_reading: lastReading ? lastReading.created_at : null,
-      readings_today: todayReadings ? todayReadings.length : 0,
-      data_age: lastReading ? 
-        Math.round((new Date() - new Date(lastReading.created_at)) / 1000) : null,
-      timestamp: new Date().toISOString()
-    };
-
-    if (!lastReading) {
-      status.system = 'no_data';
-      status.message = 'Esperando primera lectura del ESP32';
-    } else if (status.data_age > 60) { 
-      status.system = 'warning';
-      status.message = 'Posible desconexión del ESP32';
-    } else {
-      status.system = 'online';
-      status.message = 'Recibiendo datos normalmente';
-    }
-
-    res.json({
-      success: true,
-      status
-    });
-
-  } catch (error) {
-    console.error('Error en /api/sensors/status:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
-  }
-});
+function calculateDataDensity(data, hours) {
+  if (!data || data.length === 0) return 'low';
+  
+  const readingsPerHour = data.length / parseInt(hours);
+  
+  if (readingsPerHour >= 10) return 'high';
+  if (readingsPerHour >= 5) return 'medium';
+  return 'low';
+}
 
 module.exports = router;

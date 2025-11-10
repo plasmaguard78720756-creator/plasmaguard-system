@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { sensorService, alertService } from '../services/api';
 import ThemeToggle from '../components/ThemeToggle';
+import SensorCharts from '../components/SensorCharts';
 
 const DashboardOperador = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [selectedPeriod, setSelectedPeriod] = useState('1h');
+  const [activeTab, setActiveTab] = useState('alertas'); // 'alertas' o 'graficas'
   const [plasmaStatus, setPlasmaStatus] = useState('optimal');
   const [fallas, setFallas] = useState([]);
   const [datosSensores, setDatosSensores] = useState({
@@ -198,12 +200,20 @@ const DashboardOperador = () => {
               </p>
               <p className="text-theme-muted">Acceso: Operador - Monitoreo en Tiempo Real</p>
             </div>
-            <button
-              onClick={handleLogout}
-              className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
-            >
-              Cerrar Sesión
-            </button>
+            <div className="flex space-x-3">
+              <button
+                onClick={cargarDatosIniciales}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+              >
+                🔄 Actualizar
+              </button>
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+              >
+                Cerrar Sesión
+              </button>
+            </div>
           </div>
         </div>
 
@@ -265,227 +275,237 @@ const DashboardOperador = () => {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6 mb-6">
-          {/* Filtro de Período */}
-          <div className="bg-theme-card rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-bold text-theme mb-4">
-              📊 Filtro de Período
-            </h2>
-            <select
-              value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary text-theme"
+        {/* Tabs de Navegación */}
+        <div className="bg-theme-card rounded-xl shadow-lg p-6 mb-6">
+          <div className="flex border-b border-gray-200 mb-6">
+            <button
+              onClick={() => setActiveTab('alertas')}
+              className={`flex-1 py-4 font-medium text-lg ${
+                activeTab === 'alertas' 
+                  ? 'text-theme border-b-2 border-theme-primary' 
+                  : 'text-theme-muted hover:text-theme'
+              }`}
             >
-              <option value="1h">Última hora</option>
-              <option value="3h">Últimas 3 horas</option>
-              <option value="6h">Últimas 6 horas</option>
-              <option value="12h">Últimas 12 horas</option>
-            </select>
-            <p className="text-sm text-theme-muted mt-2">
-              Mostrando alertas de las últimas {getPeriodoTexto(selectedPeriod)}
-            </p>
-            
-            {/* Estadísticas rápidas */}
-            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-              <p className="text-sm text-theme-muted">Resumen del período:</p>
-              <div className="flex justify-between mt-2">
-                <span className="text-xs text-red-600">🔴 {alertStats.criticas} críticas</span>
-                <span className="text-xs text-yellow-600">🟡 {alertStats.advertencias} advertencias</span>
-                <span className="text-xs text-theme-muted">Total: {alertStats.total}</span>
-              </div>
-            </div>
+              🚨 Sistema de Alertas
+            </button>
+            <button
+              onClick={() => setActiveTab('graficas')}
+              className={`flex-1 py-4 font-medium text-lg ${
+                activeTab === 'graficas' 
+                  ? 'text-theme border-b-2 border-theme-primary' 
+                  : 'text-theme-muted hover:text-theme'
+              }`}
+            >
+              📊 Gráficas de Sensores
+            </button>
           </div>
 
-          {/* Estado del Sistema */}
-          <div className="bg-theme-card rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-bold text-theme mb-4">
-              🏥 Estado del Plasma
-            </h2>
-            <div className="flex items-center space-x-4 mb-4">
-              <div className={`w-8 h-8 rounded-full ${getStatusColor()} animate-pulse`}></div>
-              <div>
-                <p className={`text-lg font-semibold ${
-                  plasmaStatus === 'critical' ? 'text-red-600' :
-                  plasmaStatus === 'warning' ? 'text-yellow-600' :
-                  'text-green-600'
-                }`}>
-                  {getStatusMessage()}
-                </p>
-                <p className="text-sm text-theme-muted">
-                  Monitoreo continuo activo
-                </p>
-              </div>
-            </div>
-            
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-theme-muted">Temperatura:</span>
-                <span className={`font-medium ${
-                  datosSensores.temperatura < -35 || datosSensores.temperatura > -25 
-                    ? 'text-red-600' 
-                    : 'text-green-600'
-                }`}>
-                  {datosSensores.temperatura}°C
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-theme-muted">Humedad:</span>
-                <span className={`font-medium ${
-                  datosSensores.humedad > 70 ? 'text-yellow-600' : 'text-green-600'
-                }`}>
-                  {datosSensores.humedad}%
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-theme-muted">Voltaje:</span>
-                <span className={`font-medium ${
-                  datosSensores.voltaje < 200 || datosSensores.voltaje > 240 
-                    ? 'text-red-600' 
-                    : 'text-green-600'
-                }`}>
-                  {datosSensores.voltaje}V
-                </span>
-              </div>
-            </div>
-          </div>
+          {activeTab === 'alertas' && (
+            <div className="space-y-6">
+              {/* Filtro de Período */}
+              <div className="grid lg:grid-cols-3 gap-6 mb-6">
+                <div className="bg-gray-50 rounded-xl p-6">
+                  <h2 className="text-xl font-bold text-theme mb-4">
+                    📊 Filtro de Período
+                  </h2>
+                  <select
+                    value={selectedPeriod}
+                    onChange={(e) => setSelectedPeriod(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary text-theme"
+                  >
+                    <option value="1h">Última hora</option>
+                    <option value="3h">Últimas 3 horas</option>
+                    <option value="6h">Últimas 6 horas</option>
+                    <option value="12h">Últimas 12 horas</option>
+                  </select>
+                  <p className="text-sm text-theme-muted mt-2">
+                    Mostrando alertas de las últimas {getPeriodoTexto(selectedPeriod)}
+                  </p>
+                  
+                  {/* Estadísticas rápidas */}
+                  <div className="mt-4 p-3 bg-white rounded-lg">
+                    <p className="text-sm text-theme-muted">Resumen del período:</p>
+                    <div className="flex justify-between mt-2">
+                      <span className="text-xs text-red-600">🔴 {alertStats.criticas} críticas</span>
+                      <span className="text-xs text-yellow-600">🟡 {alertStats.advertencias} advertencias</span>
+                      <span className="text-xs text-theme-muted">Total: {alertStats.total}</span>
+                    </div>
+                  </div>
+                </div>
 
-          {/* Información de Alertas */}
-          <div className="bg-theme-card rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-bold text-theme mb-4">
-              🔔 Sistema de Alertas
-            </h2>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-2 bg-red-50 rounded">
-                <span className="text-red-700 text-sm">Alertas Críticas</span>
-                <span className="bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
-                  {alertStats.criticas}
-                </span>
-              </div>
-              <div className="flex items-center justify-between p-2 bg-yellow-50 rounded">
-                <span className="text-yellow-700 text-sm">Advertencias</span>
-                <span className="bg-yellow-500 text-white px-2 py-1 rounded text-xs font-bold">
-                  {alertStats.advertencias}
-                </span>
-              </div>
-              <div className="flex items-center justify-between p-2 bg-blue-50 rounded">
-                <span className="text-blue-700 text-sm">Total Activas</span>
-                <span className="bg-blue-500 text-white px-2 py-1 rounded text-xs font-bold">
-                  {alertStats.total}
-                </span>
-              </div>
-            </div>
-            
-            {alertStats.ultimaAlerta && (
-              <div className="mt-4 p-2 bg-gray-50 rounded text-xs">
-                <p className="text-theme-muted">Última alerta:</p>
-                <p className="font-medium text-theme">{alertStats.ultimaAlerta}</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Lista de Alertas Inteligentes */}
-        <div className="bg-theme-card rounded-xl shadow-lg p-6">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-theme">
-                🚨 Alertas del Sistema - {getPeriodoTexto(selectedPeriod)}
-              </h2>
-              <p className="text-theme-muted mt-1">
-                Sistema inteligente de detección - Alertas agrupadas y priorizadas
-              </p>
-            </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={cargarDatosIniciales}
-                className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition"
-              >
-                🔄 Actualizar
-              </button>
-              <button
-                onClick={() => setSelectedPeriod('1h')}
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
-              >
-                ⏰ Ver Recientes
-              </button>
-            </div>
-          </div>
-          
-          {fallas.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">✅</div>
-              <p className="text-theme-muted text-lg">No hay alertas activas en este período</p>
-              <p className="text-gray-400 text-sm mt-2">El sistema está funcionando correctamente</p>
-              <div className="mt-4 p-3 bg-green-50 rounded-lg max-w-md mx-auto">
-                <p className="text-green-700 text-sm">
-                  <strong>Estado óptimo:</strong> Todos los parámetros dentro de los rangos normales
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {fallas.map((falla) => (
-                <div 
-                  key={falla.id} 
-                  className={`border rounded-lg p-4 hover:shadow-md transition ${
-                    falla.severidad === 'critical' 
-                      ? 'border-red-300 bg-red-50' 
-                      : 'border-yellow-300 bg-yellow-50'
-                  }`}
-                >
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <span className="text-lg">{getPrioridadIcono(falla.prioridad)}</span>
-                        <h3 className="font-semibold text-theme">{falla.tipo}</h3>
-                        {getSeveridadBadge(falla.severidad)}
-                      </div>
-                      <p className="text-theme-muted text-sm mb-2">{falla.descripcion}</p>
-                      <div className="grid grid-cols-2 gap-4 text-xs">
-                        <div>
-                          <span className="text-theme-muted">Valor medido:</span>
-                          <p className="font-medium text-red-600">{falla.valor}</p>
-                        </div>
-                        <div>
-                          <span className="text-theme-muted">Umbral:</span>
-                          <p className="font-medium text-green-600">{falla.threshold}</p>
-                        </div>
-                        <div className="col-span-2">
-                          <span className="text-theme-muted">Detectado:</span>
-                          <p className="font-medium text-theme">{falla.fecha}</p>
-                        </div>
-                      </div>
+                {/* Estado del Sistema */}
+                <div className="bg-gray-50 rounded-xl p-6">
+                  <h2 className="text-xl font-bold text-theme mb-4">
+                    🏥 Estado del Plasma
+                  </h2>
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className={`w-8 h-8 rounded-full ${getStatusColor()} animate-pulse`}></div>
+                    <div>
+                      <p className={`text-lg font-semibold ${
+                        plasmaStatus === 'critical' ? 'text-red-600' :
+                        plasmaStatus === 'warning' ? 'text-yellow-600' :
+                        'text-green-600'
+                      }`}>
+                        {getStatusMessage()}
+                      </p>
+                      <p className="text-sm text-theme-muted">
+                        Monitoreo continuo activo
+                      </p>
                     </div>
                   </div>
                   
-                  <div className="flex space-x-3">
-                    <button
-                      onClick={() => handleVerFalla(falla.id)}
-                      className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition"
-                    >
-                      📋 Ver Detalles
-                    </button>
-                    <button
-                      onClick={() => handleReportarFalla(falla.id)}
-                      className="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition"
-                    >
-                      🚨 Reportar
-                    </button>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-theme-muted">Temperatura:</span>
+                      <span className={`font-medium ${
+                        datosSensores.temperatura < -35 || datosSensores.temperatura > -25 
+                          ? 'text-red-600' 
+                          : 'text-green-600'
+                      }`}>
+                        {datosSensores.temperatura}°C
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-theme-muted">Humedad:</span>
+                      <span className={`font-medium ${
+                        datosSensores.humedad > 70 ? 'text-yellow-600' : 'text-green-600'
+                      }`}>
+                        {datosSensores.humedad}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-theme-muted">Voltaje:</span>
+                      <span className={`font-medium ${
+                        datosSensores.voltaje < 200 || datosSensores.voltaje > 240 
+                          ? 'text-red-600' 
+                          : 'text-green-600'
+                      }`}>
+                        {datosSensores.voltaje}V
+                      </span>
+                    </div>
                   </div>
                 </div>
-              ))}
+
+                {/* Información de Alertas */}
+                <div className="bg-gray-50 rounded-xl p-6">
+                  <h2 className="text-xl font-bold text-theme mb-4">
+                    🔔 Sistema de Alertas
+                  </h2>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-2 bg-red-50 rounded">
+                      <span className="text-red-700 text-sm">Alertas Críticas</span>
+                      <span className="bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
+                        {alertStats.criticas}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between p-2 bg-yellow-50 rounded">
+                      <span className="text-yellow-700 text-sm">Advertencias</span>
+                      <span className="bg-yellow-500 text-white px-2 py-1 rounded text-xs font-bold">
+                        {alertStats.advertencias}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between p-2 bg-blue-50 rounded">
+                      <span className="text-blue-700 text-sm">Total Activas</span>
+                      <span className="bg-blue-500 text-white px-2 py-1 rounded text-xs font-bold">
+                        {alertStats.total}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {alertStats.ultimaAlerta && (
+                    <div className="mt-4 p-2 bg-white rounded text-xs">
+                      <p className="text-theme-muted">Última alerta:</p>
+                      <p className="font-medium text-theme">{alertStats.ultimaAlerta}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Lista de Alertas Inteligentes */}
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold text-theme">
+                      🚨 Alertas del Sistema - {getPeriodoTexto(selectedPeriod)}
+                    </h2>
+                    <p className="text-theme-muted mt-1">
+                      Sistema inteligente de detección - Alertas agrupadas y priorizadas
+                    </p>
+                  </div>
+                </div>
+                
+                {fallas.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="text-6xl mb-4">✅</div>
+                    <p className="text-theme-muted text-lg">No hay alertas activas en este período</p>
+                    <p className="text-gray-400 text-sm mt-2">El sistema está funcionando correctamente</p>
+                    <div className="mt-4 p-3 bg-green-50 rounded-lg max-w-md mx-auto">
+                      <p className="text-green-700 text-sm">
+                        <strong>Estado óptimo:</strong> Todos los parámetros dentro de los rangos normales
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {fallas.map((falla) => (
+                      <div 
+                        key={falla.id} 
+                        className={`border rounded-lg p-4 hover:shadow-md transition ${
+                          falla.severidad === 'critical' 
+                            ? 'border-red-300 bg-red-50' 
+                            : 'border-yellow-300 bg-yellow-50'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <span className="text-lg">{getPrioridadIcono(falla.prioridad)}</span>
+                              <h3 className="font-semibold text-theme">{falla.tipo}</h3>
+                              {getSeveridadBadge(falla.severidad)}
+                            </div>
+                            <p className="text-theme-muted text-sm mb-2">{falla.descripcion}</p>
+                            <div className="grid grid-cols-2 gap-4 text-xs">
+                              <div>
+                                <span className="text-theme-muted">Valor medido:</span>
+                                <p className="font-medium text-red-600">{falla.valor}</p>
+                              </div>
+                              <div>
+                                <span className="text-theme-muted">Umbral:</span>
+                                <p className="font-medium text-green-600">{falla.threshold}</p>
+                              </div>
+                              <div className="col-span-2">
+                                <span className="text-theme-muted">Detectado:</span>
+                                <p className="font-medium text-theme">{falla.fecha}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex space-x-3">
+                          <button
+                            onClick={() => handleVerFalla(falla.id)}
+                            className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition"
+                          >
+                            📋 Ver Detalles
+                          </button>
+                          <button
+                            onClick={() => handleReportarFalla(falla.id)}
+                            className="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition"
+                          >
+                            🚨 Reportar
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
-        </div>
 
-        {/* Botón Volver */}
-        <div className="mt-6 text-center">
-          <button
-            onClick={handleLogout}
-            className="bg-gray-500 text-white py-2 px-6 rounded-lg hover:bg-gray-600 transition"
-          >
-            Volver al Login
-          </button>
+          {activeTab === 'graficas' && (
+            <SensorCharts />
+          )}
         </div>
       </div>
       
