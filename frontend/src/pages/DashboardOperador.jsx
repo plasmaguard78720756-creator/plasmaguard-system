@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { sensorService, alertService } from '../services/api';
+import ThemeToggle from '../components/ThemeToggle';
 
 const DashboardOperador = () => {
   const navigate = useNavigate();
@@ -102,9 +103,9 @@ const DashboardOperador = () => {
 
   const getStatusColor = () => {
     switch (plasmaStatus) {
-      case 'optimal': return 'bg-green-500';
-      case 'warning': return 'bg-yellow-500';
-      case 'critical': return 'bg-red-500';
+      case 'optimal': return 'bg-theme-success';
+      case 'warning': return 'bg-theme-warning';
+      case 'critical': return 'bg-theme-secondary';
       default: return 'bg-gray-500';
     }
   };
@@ -126,32 +127,34 @@ const DashboardOperador = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-plasma-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando datos del sistema...</p>
+      <div className="min-h-screen" style={{ background: 'var(--bg-gradient, linear-gradient(to bottom right, #f0f9ff, #e0f2fe))' }}>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-theme-primary mx-auto"></div>
+            <p className="mt-4 text-theme-muted">Cargando datos del sistema...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
+    <div className="min-h-screen" style={{ background: 'var(--bg-gradient, linear-gradient(to bottom right, #f0f9ff, #e0f2fe))' }}>
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-plasma-primary">PLASMAGUARD</h1>
-          <p className="text-gray-600 mt-2">Seguridad y Confianza</p>
+          <h1 className="text-4xl font-bold text-theme-primary">PLASMAGUARD</h1>
+          <p className="text-theme-muted mt-2">Seguridad y Confianza</p>
         </div>
 
         {/* Información del usuario */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+        <div className="bg-theme-card rounded-lg shadow-sm p-4 mb-6">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-lg font-semibold text-gray-800">
-                Bienvenido: <span className="text-plasma-primary">{user?.name || 'Usuario'}</span>
+              <p className="text-lg font-semibold text-theme">
+                Bienvenido: <span className="text-theme-primary">{user?.name || 'Usuario'}</span>
               </p>
-              <p className="text-gray-600">Acceso: Operador</p>
+              <p className="text-theme-muted">Acceso: Operador</p>
             </div>
             <button
               onClick={handleLogout}
@@ -164,8 +167,8 @@ const DashboardOperador = () => {
 
         <div className="grid lg:grid-cols-3 gap-6 mb-6">
           {/* Estado del Plasma */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
+          <div className="bg-theme-card rounded-xl shadow-lg p-6">
+            <h2 className="text-xl font-bold text-theme mb-4">
               Estado del Plasma Fresco Congelado
             </h2>
             <div className="flex items-center space-x-4">
@@ -178,7 +181,7 @@ const DashboardOperador = () => {
                 }`}>
                   {getStatusMessage()}
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-theme-muted">
                   Última actualización: {new Date().toLocaleTimeString()}
                 </p>
               </div>
@@ -186,41 +189,41 @@ const DashboardOperador = () => {
           </div>
 
           {/* Registro de Fallas Dropdown */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
+          <div className="bg-theme-card rounded-xl shadow-lg p-6">
+            <h2 className="text-xl font-bold text-theme mb-4">
               Registro de Fallas
             </h2>
             <select
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-plasma-primary"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary text-theme"
             >
               <option value="1h">Última hora</option>
               <option value="3h">Últimas 3 horas</option>
               <option value="6h">Últimas 6 horas</option>
               <option value="12h">Últimas 12 horas</option>
             </select>
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="text-sm text-theme-muted mt-2">
               Mostrando fallas del período seleccionado
             </p>
           </div>
 
           {/* Información adicional */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
+          <div className="bg-theme-card rounded-xl shadow-lg p-6">
+            <h2 className="text-xl font-bold text-theme mb-4">
               Resumen del Sistema
             </h2>
             <div className="space-y-2">
-              <p className="text-gray-700">
+              <p className="text-theme">
                 <span className="font-semibold">Total de fallas:</span> {fallas.length}
               </p>
-              <p className="text-gray-700">
+              <p className="text-theme">
                 <span className="font-semibold">Críticas:</span> {fallas.filter(f => f.severidad === 'critical').length}
               </p>
-              <p className="text-gray-700">
+              <p className="text-theme">
                 <span className="font-semibold">Advertencias:</span> {fallas.filter(f => f.severidad === 'warning').length}
               </p>
-              <p className="text-gray-700">
+              <p className="text-theme">
                 <span className="font-semibold">Temperatura actual:</span> {datosSensores.temperatura}°C
               </p>
             </div>
@@ -228,9 +231,9 @@ const DashboardOperador = () => {
         </div>
 
         {/* Lista de Fallas */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="bg-theme-card rounded-xl shadow-lg p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">
+            <h2 className="text-2xl font-bold text-theme">
               Lista de Fallas - Últimas {selectedPeriod}
             </h2>
             <button
@@ -243,7 +246,7 @@ const DashboardOperador = () => {
           
           {fallas.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-500 text-lg">No hay fallas registradas en este período</p>
+              <p className="text-theme-muted text-lg">No hay fallas registradas en este período</p>
               <p className="text-gray-400 text-sm">El sistema está funcionando correctamente</p>
             </div>
           ) : (
@@ -252,10 +255,10 @@ const DashboardOperador = () => {
                 <div key={falla.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <h3 className="font-semibold text-gray-800">{falla.tipo}</h3>
-                      <p className="text-gray-600 text-sm">{falla.descripcion}</p>
+                      <h3 className="font-semibold text-theme">{falla.tipo}</h3>
+                      <p className="text-theme-muted text-sm">{falla.descripcion}</p>
                       <p className="text-gray-500 text-xs mt-1">{falla.fecha}</p>
-                      <p className="text-gray-600 text-sm mt-1">
+                      <p className="text-theme-muted text-sm mt-1">
                         Valor: <span className="font-medium">{falla.valor}</span> | 
                         Umbral: <span className="font-medium">{falla.threshold}</span>
                       </p>
@@ -292,7 +295,11 @@ const DashboardOperador = () => {
           </button>
         </div>
       </div>
+      
+      {/* Botón de temas */}
+      <ThemeToggle />
     </div>
   );
 };
+
 export default DashboardOperador;

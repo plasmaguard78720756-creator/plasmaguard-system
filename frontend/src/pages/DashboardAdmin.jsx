@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { userService } from '../services/api'; 
+import { userService } from '../services/api';
+import ThemeToggle from '../components/ThemeToggle';
 
 const DashboardAdmin = () => {
   const navigate = useNavigate();
@@ -209,7 +210,8 @@ const DashboardAdmin = () => {
         role: formData.role,
         ci: formData.ci,
         institucion: formData.institucion || '',
-        celular: formData.celular || ''
+        celular: formData.celular || '',
+        active: formData.active
       };
 
       if (viewMode === 'add') {
@@ -227,8 +229,8 @@ const DashboardAdmin = () => {
     if (viewMode === 'view' && selectedUser) {
       return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Detalles del Usuario</h3>
+          <div className="bg-theme-card rounded-xl p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold text-theme mb-4">Detalles del Usuario</h3>
             <div className="space-y-3">
               <div><strong>Nombre:</strong> {selectedUser.name}</div>
               <div><strong>Email:</strong> {selectedUser.email}</div>
@@ -253,20 +255,20 @@ const DashboardAdmin = () => {
     if (viewMode === 'edit' || viewMode === 'add') {
       return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">
+          <div className="bg-theme-card rounded-xl p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold text-theme mb-4">
               {viewMode === 'add' ? 'Añadir Usuario' : 'Editar Usuario'}
             </h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-theme mb-2">
                   Nombre *
                 </label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className={`w-full px-3 py-2 border rounded-lg ${
+                  className={`w-full px-3 py-2 border rounded-lg text-theme ${
                     formErrors.name ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="Nombre completo"
@@ -277,14 +279,14 @@ const DashboardAdmin = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-theme mb-2">
                   Email *
                 </label>
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  className={`w-full px-3 py-2 border rounded-lg ${
+                  className={`w-full px-3 py-2 border rounded-lg text-theme ${
                     formErrors.email ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="usuario@gmail.com"
@@ -295,14 +297,14 @@ const DashboardAdmin = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-theme mb-2">
                   CI *
                 </label>
                 <input
                   type="text"
                   value={formData.ci}
                   onChange={(e) => setFormData({...formData, ci: e.target.value})}
-                  className={`w-full px-3 py-2 border rounded-lg ${
+                  className={`w-full px-3 py-2 border rounded-lg text-theme ${
                     formErrors.ci ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="12345678"
@@ -313,13 +315,13 @@ const DashboardAdmin = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-theme mb-2">
                   Rol *
                 </label>
                 <select
                   value={formData.role}
                   onChange={(e) => setFormData({...formData, role: e.target.value})}
-                  className={`w-full px-3 py-2 border rounded-lg ${
+                  className={`w-full px-3 py-2 border rounded-lg text-theme ${
                     formErrors.role ? 'border-red-500' : 'border-gray-300'
                   }`}
                 >
@@ -335,14 +337,14 @@ const DashboardAdmin = () => {
 
               {viewMode === 'add' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-theme mb-2">
                     Contraseña *
                   </label>
                   <input
                     type="password"
                     value={formData.password || ''}
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
-                    className={`w-full px-3 py-2 border rounded-lg ${
+                    className={`w-full px-3 py-2 border rounded-lg text-theme ${
                       formErrors.password ? 'border-red-500' : 'border-gray-300'
                     }`}
                     placeholder="Contraseña temporal"
@@ -350,36 +352,50 @@ const DashboardAdmin = () => {
                   {formErrors.password && (
                     <p className="text-red-500 text-sm mt-1">{formErrors.password}</p>
                   )}
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-theme-muted mt-1">
                     El usuario podrá cambiar su contraseña después
                   </p>
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-theme mb-2">
                   Institución
                 </label>
                 <input
                   type="text"
                   value={formData.institucion || ''}
                   onChange={(e) => setFormData({...formData, institucion: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-theme"
                   placeholder="Hospital o institución"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-theme mb-2">
                   Celular
                 </label>
                 <input
                   type="text"
                   value={formData.celular || ''}
                   onChange={(e) => setFormData({...formData, celular: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-theme"
                   placeholder="Número de celular"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-theme mb-2">
+                  Estado
+                </label>
+                <select
+                  value={formData.active}
+                  onChange={(e) => setFormData({...formData, active: e.target.value === 'true'})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-theme"
+                >
+                  <option value={true}>Activo</option>
+                  <option value={false}>Inactivo</option>
+                </select>
               </div>
             </div>
             <div className="flex space-x-3 mt-4">
@@ -408,32 +424,34 @@ const DashboardAdmin = () => {
 
   if (loading && usuarios.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-plasma-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando usuarios...</p>
+      <div className="min-h-screen" style={{ background: 'var(--bg-gradient, linear-gradient(to bottom right, #f0f9ff, #e0f2fe))' }}>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-theme-primary mx-auto"></div>
+            <p className="mt-4 text-theme-muted">Cargando usuarios...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
+    <div className="min-h-screen" style={{ background: 'var(--bg-gradient, linear-gradient(to bottom right, #f0f9ff, #e0f2fe))' }}>
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-plasma-primary">PLASMAGUARD</h1>
-          <p className="text-gray-600 mt-2">Seguridad y Confianza</p>
+          <h1 className="text-4xl font-bold text-theme-primary">PLASMAGUARD</h1>
+          <p className="text-theme-muted mt-2">Seguridad y Confianza</p>
         </div>
 
         {/* Información del usuario */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+        <div className="bg-theme-card rounded-lg shadow-sm p-4 mb-6">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-lg font-semibold text-gray-800">
-                Bienvenido: <span className="text-plasma-primary">{user?.name || 'Administrador'}</span>
+              <p className="text-lg font-semibold text-theme">
+                Bienvenido: <span className="text-theme-primary">{user?.name || 'Administrador'}</span>
               </p>
-              <p className="text-gray-600">Acceso: Administrador</p>
+              <p className="text-theme-muted">Acceso: Administrador</p>
             </div>
             <div className="flex space-x-3">
               <button
@@ -463,9 +481,9 @@ const DashboardAdmin = () => {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* COLUMNA IZQUIERDA - Manejo de Cuentas */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="bg-theme-card rounded-xl shadow-lg p-6">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">
+                <h2 className="text-2xl font-bold text-theme">
                   Manejo de Cuentas ({usuarios.length} usuarios)
                 </h2>
                 <button
@@ -479,7 +497,7 @@ const DashboardAdmin = () => {
               
               {usuarios.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-500 text-lg">No hay usuarios registrados</p>
+                  <p className="text-theme-muted text-lg">No hay usuarios registrados</p>
                   <p className="text-gray-400 text-sm">Usa el botón "Añadir Usuario" para comenzar</p>
                 </div>
               ) : (
@@ -487,11 +505,11 @@ const DashboardAdmin = () => {
                   <table className="w-full">
                     <thead>
                       <tr className="bg-gray-50">
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Usuario</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Rol</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">CI</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Estado</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Acciones</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-theme">Usuario</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-theme">Rol</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-theme">CI</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-theme">Estado</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-theme">Acciones</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
@@ -499,12 +517,12 @@ const DashboardAdmin = () => {
                         <tr key={usuario.id} className="hover:bg-gray-50">
                           <td className="px-4 py-3">
                             <div>
-                              <p className="font-medium text-gray-800">{usuario.name}</p>
-                              <p className="text-sm text-gray-500">{usuario.email}</p>
+                              <p className="font-medium text-theme">{usuario.name}</p>
+                              <p className="text-sm text-theme-muted">{usuario.email}</p>
                             </div>
                           </td>
                           <td className="px-4 py-3">{getRoleBadge(usuario.role)}</td>
-                          <td className="px-4 py-3 text-gray-600">{usuario.ci}</td>
+                          <td className="px-4 py-3 text-theme-muted">{usuario.ci}</td>
                           <td className="px-4 py-3">
                             <span className={`px-2 py-1 rounded text-xs font-medium ${
                               usuario.active 
@@ -553,9 +571,9 @@ const DashboardAdmin = () => {
           {/* COLUMNA DERECHA - Vistas de Fallas y Reportes */}
           <div className="space-y-6">
             {/* Vista de Fallas Globales */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="bg-theme-card rounded-xl shadow-lg p-6">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-gray-800">Vista de Fallas Globales</h2>
+                <h2 className="text-xl font-bold text-theme">Vista de Fallas Globales</h2>
                 <button
                   onClick={handleEliminarTodasFallas}
                   className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition"
@@ -569,8 +587,8 @@ const DashboardAdmin = () => {
                   <div key={falla.id} className="border border-gray-200 rounded-lg p-3">
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className="font-medium text-gray-800">Falla #{falla.id}</p>
-                        <p className="text-sm text-gray-600">{falla.tipo}</p>
+                        <p className="font-medium text-theme">Falla #{falla.id}</p>
+                        <p className="text-sm text-theme-muted">{falla.tipo}</p>
                         <p className="text-xs text-gray-500">{falla.fecha}</p>
                       </div>
                       {getAccionBadge(falla.accion)}
@@ -581,23 +599,23 @@ const DashboardAdmin = () => {
             </div>
 
             {/* Vista de Reportes */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">Vista de Reportes</h2>
+            <div className="bg-theme-card rounded-xl shadow-lg p-6">
+              <h2 className="text-xl font-bold text-theme mb-4">Vista de Reportes</h2>
               
               <div className="space-y-3">
                 {reportes.map((reporte) => (
                   <div key={reporte.id} className="border border-gray-200 rounded-lg p-3">
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div>
-                        <span className="text-gray-600">Enviado:</span>
-                        <p className="font-medium">{reporte.enviado}</p>
+                        <span className="text-theme-muted">Enviado:</span>
+                        <p className="font-medium text-theme">{reporte.enviado}</p>
                       </div>
                       <div>
-                        <span className="text-gray-600">Visto:</span>
-                        <p className="font-medium">{reporte.visto}</p>
+                        <span className="text-theme-muted">Visto:</span>
+                        <p className="font-medium text-theme">{reporte.visto}</p>
                       </div>
                       <div className="col-span-2">
-                        <span className="text-gray-600">Solución:</span>
+                        <span className="text-theme-muted">Solución:</span>
                         <div className="mt-1">{getSolucionBadge(reporte.solucion)}</div>
                       </div>
                     </div>
@@ -622,9 +640,9 @@ const DashboardAdmin = () => {
       {/* Modal de confirmación de eliminación */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full">
+          <div className="bg-theme-card rounded-xl p-6 max-w-md w-full">
             <h3 className="text-xl font-bold text-red-600 mb-4">Confirmar Eliminación</h3>
-            <p className="text-gray-700 mb-4">
+            <p className="text-theme mb-4">
               ¿Estás seguro de que deseas eliminar al usuario <strong>{selectedUser?.name}</strong>? 
               Esta acción no se puede deshacer.
             </p>
@@ -650,6 +668,9 @@ const DashboardAdmin = () => {
 
       {/* Formulario de usuario (Ver/Editar/Añadir) */}
       <UserForm />
+      
+      {/* Botón de temas */}
+      <ThemeToggle />
     </div>
   );
 };

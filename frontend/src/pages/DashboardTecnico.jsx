@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { sensorService, alertService } from '../services/api';
+import ThemeToggle from '../components/ThemeToggle';
 
 const DashboardTecnico = () => {
   const navigate = useNavigate();
@@ -137,32 +138,34 @@ const DashboardTecnico = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-plasma-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando datos del sistema...</p>
+      <div className="min-h-screen" style={{ background: 'var(--bg-gradient, linear-gradient(to bottom right, #f0f9ff, #e0f2fe))' }}>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-theme-primary mx-auto"></div>
+            <p className="mt-4 text-theme-muted">Cargando datos del sistema...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
+    <div className="min-h-screen" style={{ background: 'var(--bg-gradient, linear-gradient(to bottom right, #f0f9ff, #e0f2fe))' }}>
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-plasma-primary">PLASMAGUARD</h1>
-          <p className="text-gray-600 mt-2">Seguridad y Confianza</p>
+          <h1 className="text-4xl font-bold text-theme-primary">PLASMAGUARD</h1>
+          <p className="text-theme-muted mt-2">Seguridad y Confianza</p>
         </div>
 
         {/* Información del usuario */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+        <div className="bg-theme-card rounded-lg shadow-sm p-4 mb-6">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-lg font-semibold text-gray-800">
-                Bienvenido: <span className="text-plasma-primary">{user?.name || 'Técnico'}</span>
+              <p className="text-lg font-semibold text-theme">
+                Bienvenido: <span className="text-theme-primary">{user?.name || 'Técnico'}</span>
               </p>
-              <p className="text-gray-600">Acceso: Servicio Técnico</p>
+              <p className="text-theme-muted">Acceso: Servicio Técnico</p>
             </div>
             <div className="flex space-x-3">
               <button
@@ -190,9 +193,9 @@ const DashboardTecnico = () => {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* COLUMNA IZQUIERDA - Reportes */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="bg-theme-card rounded-xl shadow-lg p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">📋 Reportes de Fallas</h2>
+                <h2 className="text-2xl font-bold text-theme">📋 Reportes de Fallas</h2>
                 <button
                   onClick={cargarDatosIniciales}
                   className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition"
@@ -203,7 +206,7 @@ const DashboardTecnico = () => {
               
               {reportes.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-500 text-lg">No hay reportes pendientes</p>
+                  <p className="text-theme-muted text-lg">No hay reportes pendientes</p>
                   <p className="text-gray-400 text-sm">El sistema está funcionando correctamente</p>
                 </div>
               ) : (
@@ -213,7 +216,7 @@ const DashboardTecnico = () => {
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex-1">
                           <div className="flex items-center space-x-3 mb-2">
-                            <h3 className="font-semibold text-gray-800">Reporte #{reporte.id}</h3>
+                            <h3 className="font-semibold text-theme">Reporte #{reporte.id}</h3>
                             {getEstadoBadge(reporte.estado)}
                             {reporte.severidad === 'critical' && (
                               <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-medium">
@@ -221,16 +224,16 @@ const DashboardTecnico = () => {
                               </span>
                             )}
                           </div>
-                          <p className="text-gray-700 mb-1">
+                          <p className="text-theme mb-1">
                             <strong>Reportado por:</strong> {reporte.operador}
                           </p>
-                          <p className="text-gray-700 mb-1">
+                          <p className="text-theme mb-1">
                             <strong>Falla:</strong> {reporte.falla}
                           </p>
-                          <p className="text-gray-600 text-sm mb-2">
+                          <p className="text-theme-muted text-sm mb-2">
                             <strong>Fecha:</strong> {reporte.fecha}
                           </p>
-                          <p className="text-gray-700 bg-gray-50 p-2 rounded text-sm">
+                          <p className="text-theme bg-gray-50 p-2 rounded text-sm">
                             {reporte.observaciones}
                           </p>
                         </div>
@@ -266,8 +269,8 @@ const DashboardTecnico = () => {
 
           {/* COLUMNA DERECHA - Monitoreo de Sensores */}
           <div className="space-y-6">
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">📊 Monitoreo en Tiempo Real</h2>
+            <div className="bg-theme-card rounded-xl shadow-lg p-6">
+              <h2 className="text-xl font-bold text-theme mb-4">📊 Monitoreo en Tiempo Real</h2>
               
               <div className="space-y-4">
                 {/* Temperatura */}
@@ -275,8 +278,8 @@ const DashboardTecnico = () => {
                   <div className="flex items-center space-x-3">
                     {getSensorIndicator(datosSensores.temperatura, -35, -25)}
                     <div>
-                      <p className="font-medium text-gray-700">Temperatura</p>
-                      <p className="text-xs text-gray-500">Rango: -35°C a -25°C</p>
+                      <p className="font-medium text-theme">Temperatura</p>
+                      <p className="text-xs text-theme-muted">Rango: -35°C a -25°C</p>
                     </div>
                   </div>
                   <span className={`text-lg font-bold ${getSensorColor(datosSensores.temperatura, -35, -25)}`}>
@@ -289,8 +292,8 @@ const DashboardTecnico = () => {
                   <div className="flex items-center space-x-3">
                     {getSensorIndicator(datosSensores.humedad, 30, 70)}
                     <div>
-                      <p className="font-medium text-gray-700">Humedad</p>
-                      <p className="text-xs text-gray-500">Rango: 30% a 70%</p>
+                      <p className="font-medium text-theme">Humedad</p>
+                      <p className="text-xs text-theme-muted">Rango: 30% a 70%</p>
                     </div>
                   </div>
                   <span className={`text-lg font-bold ${getSensorColor(datosSensores.humedad, 30, 70)}`}>
@@ -303,8 +306,8 @@ const DashboardTecnico = () => {
                   <div className="flex items-center space-x-3">
                     {getSensorIndicator(datosSensores.voltaje, 200, 240)}
                     <div>
-                      <p className="font-medium text-gray-700">Voltaje</p>
-                      <p className="text-xs text-gray-500">Rango: 200V a 240V</p>
+                      <p className="font-medium text-theme">Voltaje</p>
+                      <p className="text-xs text-theme-muted">Rango: 200V a 240V</p>
                     </div>
                   </div>
                   <span className={`text-lg font-bold ${getSensorColor(datosSensores.voltaje, 200, 240)}`}>
@@ -317,8 +320,8 @@ const DashboardTecnico = () => {
                   <div className="flex items-center space-x-3">
                     {getSensorIndicator(datosSensores.corriente, 0, 15)}
                     <div>
-                      <p className="font-medium text-gray-700">Corriente</p>
-                      <p className="text-xs text-gray-500">Máx: 15A</p>
+                      <p className="font-medium text-theme">Corriente</p>
+                      <p className="text-xs text-theme-muted">Máx: 15A</p>
                     </div>
                   </div>
                   <span className={`text-lg font-bold ${getSensorColor(datosSensores.corriente, 0, 15)}`}>
@@ -329,10 +332,10 @@ const DashboardTecnico = () => {
 
               {/* Estado general */}
               <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-theme">
                   <strong>Actualizado:</strong> {new Date().toLocaleTimeString()}
                 </p>
-                <p className="text-sm text-gray-700 mt-1">
+                <p className="text-sm text-theme mt-1">
                   <strong>Estado general:</strong> 
                   <span className="text-green-600 font-medium"> Sistema estable</span>
                 </p>
@@ -340,8 +343,8 @@ const DashboardTecnico = () => {
             </div>
 
             {/* Información rápida */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">📈 Resumen Rápido</h2>
+            <div className="bg-theme-card rounded-xl shadow-lg p-6">
+              <h2 className="text-xl font-bold text-theme mb-4">📈 Resumen Rápido</h2>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="text-center p-3 bg-blue-50 rounded-lg">
                   <p className="text-2xl font-bold text-blue-600">{reportes.length}</p>
@@ -378,6 +381,9 @@ const DashboardTecnico = () => {
           </button>
         </div>
       </div>
+      
+      {/* Botón de temas */}
+      <ThemeToggle />
     </div>
   );
 };
