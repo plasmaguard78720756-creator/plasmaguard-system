@@ -184,7 +184,7 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 py-8">
+    <div className="min-h-screen py-8" style={{ background: 'var(--bg-gradient, linear-gradient(to bottom right, #f0f9ff, #e0f2fe))' }}>
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold text-plasma-primary">PLASMAGUARD</h1>
         <p className="text-gray-600 mt-2">Seguridad y Confianza</p>

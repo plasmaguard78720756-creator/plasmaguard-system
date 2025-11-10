@@ -140,18 +140,18 @@ const DashboardOperador = () => {
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-plasma-primary">PLASMAGUARD</h1>
-          <p className="text-gray-600 mt-2">Seguridad y Confianza</p>
+          <h1 className="text-4xl font-bold text-theme-primary">PLASMAGUARD</h1>
+          <p className="text-theme-muted mt-2">Seguridad y Confianza</p>
         </div>
 
         {/* Información del usuario */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+        <div className="bg-theme-card rounded-lg shadow-sm p-4 mb-6">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-lg font-semibold text-gray-800">
-                Bienvenido: <span className="text-plasma-primary">{user?.name || 'Usuario'}</span>
+              <p className="text-lg font-semibold text-theme">
+                Bienvenido: <span className="text-theme-primary">{user?.name || 'Usuario'}</span>
               </p>
-              <p className="text-gray-600">Acceso: Operador</p>
+              <p className="text-theme-muted">Acceso: Operador</p>
             </div>
             <button
               onClick={handleLogout}
@@ -164,8 +164,8 @@ const DashboardOperador = () => {
 
         <div className="grid lg:grid-cols-3 gap-6 mb-6">
           {/* Estado del Plasma */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
+          <div className="bg-theme-card rounded-xl shadow-lg p-6">
+            <h2 className="text-xl font-bold text-theme mb-4">
               Estado del Plasma Fresco Congelado
             </h2>
             <div className="flex items-center space-x-4">
@@ -178,7 +178,7 @@ const DashboardOperador = () => {
                 }`}>
                   {getStatusMessage()}
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-theme-muted">
                   Última actualización: {new Date().toLocaleTimeString()}
                 </p>
               </div>
@@ -186,8 +186,8 @@ const DashboardOperador = () => {
           </div>
 
           {/* Registro de Fallas Dropdown */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
+          <div className="bg-theme-card rounded-xl shadow-lg p-6">
+            <h2 className="text-xl font-bold text-theme mb-4">
               Registro de Fallas
             </h2>
             <select
@@ -206,7 +206,7 @@ const DashboardOperador = () => {
           </div>
 
           {/* Información adicional */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="bg-theme-card rounded-xl shadow-lg p-6">
             <h2 className="text-xl font-bold text-gray-800 mb-4">
               Resumen del Sistema
             </h2>
@@ -228,7 +228,7 @@ const DashboardOperador = () => {
         </div>
 
         {/* Lista de Fallas */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="bg-theme-card rounded-xl shadow-lg p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-800">
               Lista de Fallas - Últimas {selectedPeriod}
@@ -253,9 +253,9 @@ const DashboardOperador = () => {
                   <div className="flex justify-between items-start mb-3">
                     <div>
                       <h3 className="font-semibold text-gray-800">{falla.tipo}</h3>
-                      <p className="text-gray-600 text-sm">{falla.descripcion}</p>
+                      <p className="text-theme-muted text-sm">{falla.descripcion}</p>
                       <p className="text-gray-500 text-xs mt-1">{falla.fecha}</p>
-                      <p className="text-gray-600 text-sm mt-1">
+                      <p className="text-theme-muted text-sm mt-1">
                         Valor: <span className="font-medium">{falla.valor}</span> | 
                         Umbral: <span className="font-medium">{falla.threshold}</span>
                       </p>
@@ -292,6 +292,7 @@ const DashboardOperador = () => {
           </button>
         </div>
       </div>
+      <ThemeToggle />
     </div>
   );
 };

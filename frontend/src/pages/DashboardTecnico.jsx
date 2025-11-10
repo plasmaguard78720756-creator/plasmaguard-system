@@ -140,7 +140,7 @@ const DashboardTecnico = () => {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-plasma-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando datos del sistema...</p>
+          <p className="mt-4 text-theme-muted">Cargando datos del sistema...</p>
         </div>
       </div>
     );
@@ -152,17 +152,17 @@ const DashboardTecnico = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-plasma-primary">PLASMAGUARD</h1>
-          <p className="text-gray-600 mt-2">Seguridad y Confianza</p>
+          <p className="text-theme-muted mt-2">Seguridad y Confianza</p>
         </div>
 
         {/* Información del usuario */}
         <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-lg font-semibold text-gray-800">
+              <p className="text-lg font-semibold text-theme">
                 Bienvenido: <span className="text-plasma-primary">{user?.name || 'Técnico'}</span>
               </p>
-              <p className="text-gray-600">Acceso: Servicio Técnico</p>
+              <p className="text-theme-muted">Acceso: Servicio Técnico</p>
             </div>
             <div className="flex space-x-3">
               <button
@@ -192,7 +192,7 @@ const DashboardTecnico = () => {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-xl shadow-lg p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">📋 Reportes de Fallas</h2>
+                <h2 className="text-2xl font-bold text-theme">📋 Reportes de Fallas</h2>
                 <button
                   onClick={cargarDatosIniciales}
                   className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition"
@@ -213,7 +213,7 @@ const DashboardTecnico = () => {
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex-1">
                           <div className="flex items-center space-x-3 mb-2">
-                            <h3 className="font-semibold text-gray-800">Reporte #{reporte.id}</h3>
+                            <h3 className="font-semibold text-theme">Reporte #{reporte.id}</h3>
                             {getEstadoBadge(reporte.estado)}
                             {reporte.severidad === 'critical' && (
                               <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-medium">
@@ -227,7 +227,7 @@ const DashboardTecnico = () => {
                           <p className="text-gray-700 mb-1">
                             <strong>Falla:</strong> {reporte.falla}
                           </p>
-                          <p className="text-gray-600 text-sm mb-2">
+                          <p className="text-theme-muted text-sm mb-2">
                             <strong>Fecha:</strong> {reporte.fecha}
                           </p>
                           <p className="text-gray-700 bg-gray-50 p-2 rounded text-sm">
@@ -267,7 +267,7 @@ const DashboardTecnico = () => {
           {/* COLUMNA DERECHA - Monitoreo de Sensores */}
           <div className="space-y-6">
             <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">📊 Monitoreo en Tiempo Real</h2>
+              <h2 className="text-xl font-bold text-theme mb-4">📊 Monitoreo en Tiempo Real</h2>
               
               <div className="space-y-4">
                 {/* Temperatura */}
@@ -341,7 +341,7 @@ const DashboardTecnico = () => {
 
             {/* Información rápida */}
             <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">📈 Resumen Rápido</h2>
+              <h2 className="text-xl font-bold text-theme mb-4">📈 Resumen Rápido</h2>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="text-center p-3 bg-blue-50 rounded-lg">
                   <p className="text-2xl font-bold text-blue-600">{reportes.length}</p>
@@ -360,7 +360,7 @@ const DashboardTecnico = () => {
                   <p className="text-green-700">Solucionados</p>
                 </div>
                 <div className="text-center p-3 bg-gray-50 rounded-lg">
-                  <p className="text-2xl font-bold text-gray-600">4/4</p>
+                  <p className="text-2xl font-bold text-theme-muted">4/4</p>
                   <p className="text-gray-700">Sensores OK</p>
                 </div>
               </div>
@@ -378,6 +378,7 @@ const DashboardTecnico = () => {
           </button>
         </div>
       </div>
+      <ThemeToggle />
     </div>
   );
 };
