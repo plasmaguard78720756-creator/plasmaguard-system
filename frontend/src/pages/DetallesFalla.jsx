@@ -1,23 +1,90 @@
-import React from 'react';
+// src/pages/DetallesFalla.jsx - VERSIÓN CON DATOS REALES
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { alertService } from '../services/api';
 
 const DetallesFalla = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { id } = useParams(); 
+  const { id } = useParams();
+  
+  const [fallaDetalle, setFallaDetalle] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const fallaDetalle = {
-    id: parseInt(id),
-    tipo: 'Temperatura',
-    descripcion: 'Temperatura fuera de rango permitido para plasma fresco congelado',
-    severidad: 'critical',
-    fecha: '2024-01-20 10:30:00',
-    valor_medido: '-40°C',
-    valor_esperado: '-25°C a -35°C',
-    sensor_afectado: 'PT100',
-    duracion: '15 minutos',
-    acciones_recomendadas: 'Verificar sensor PT100 y ajustar temperatura del refrigerador'
+  // Cargar datos reales de la falla
+  useEffect(() => {
+    cargarDetallesFalla();
+  }, [id]);
+
+  const cargarDetallesFalla = async () => {
+    try {
+      setLoading(true);
+      const response = await alertService.getAllAlerts();
+      
+      if (response.success) {
+        // Buscar la alerta específica por ID
+        const alerta = response.data.find(a => a.id === parseInt(id));
+        
+        if (alerta) {
+          setFallaDetalle({
+            id: alerta.id,
+            tipo: alerta.type,
+            descripcion: alerta.message,
+            severidad: alerta.severity,
+            fecha: new Date(alerta.created_at).toLocaleString(),
+            valor_medido: `${alerta.value}${getUnidad(alerta.type)}`,
+            valor_esperado: `${alerta.threshold}${getUnidad(alerta.type)}`,
+            sensor_afectado: getSensorNombre(alerta.type),
+            duracion: 'En revisión', // Podemos calcular esto si tenemos más datos
+            acciones_recomendadas: getAccionesRecomendadas(alerta.type, alerta.value)
+          });
+        } else {
+          setError('Falla no encontrada');
+        }
+      } else {
+        setError('Error al cargar los detalles de la falla');
+      }
+    } catch (error) {
+      console.error('Error cargando falla:', error);
+      setError('Error de conexión al cargar la falla');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Funciones auxiliares
+  const getUnidad = (tipo) => {
+    const unidades = {
+      temperature: '°C',
+      humidity: '%',
+      voltage: 'V',
+      current: 'A'
+    };
+    return unidades[tipo] || '';
+  };
+
+  const getSensorNombre = (tipo) => {
+    const sensores = {
+      temperature: 'PT100 (Temperatura)',
+      humidity: 'DHT11 (Humedad)',
+      voltage: 'ZMPT101B (Voltaje)',
+      current: 'ACS712 (Corriente)',
+      system: 'Sistema General'
+    };
+    return sensores[tipo] || tipo;
+  };
+
+  const getAccionesRecomendadas = (tipo, valor) => {
+    const acciones = {
+      temperature: `Verificar sensor PT100 y ajustar temperatura del refrigerador. Valor crítico: ${valor}°C`,
+      humidity: `Verificar sistema de control de humedad. Valor actual: ${valor}%`,
+      voltage: `Revisar fuente de alimentación y estabilizador. Voltaje: ${valor}V`,
+      current: `Verificar consumo eléctrico del sistema. Corriente: ${valor}A`,
+      system: 'Revisión general del sistema requerida'
+    };
+    return acciones[tipo] || 'Contactar al servicio técnico para diagnóstico.';
   };
 
   const getSeverityColor = (severidad) => {
@@ -36,13 +103,49 @@ const DetallesFalla = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-plasma-primary mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando detalles de la falla...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !fallaDetalle) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 flex items-center justify-center">
+        <div className="bg-white rounded-xl shadow-lg p-6 max-w-md w-full">
+          <div className="text-center">
+            <div className="text-red-500 text-4xl mb-4">❌</div>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Error</h2>
+            <p className="text-gray-600 mb-4">{error || 'Falla no encontrada'}</p>
+            <button
+              onClick={() => navigate('/operador/dashboard')}
+              className="bg-plasma-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+            >
+              Volver al Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-plasma-primary">PLASMAGUARD</h1>
-          <p className="text-gray-600 mt-2">Seguridad y Confianza</p>
+          <div className="flex items-center justify-center space-x-4 mb-3">
+            <img src="/favicon-32x32.png" alt="Logo" className="w-10 h-10" />
+            <h1 className="text-4xl font-bold text-plasma-primary">
+              PLASMA<span className="text-red-600">GUARD</span>
+            </h1>
+          </div>
+          <p className="text-gray-600">Sistema de Monitoreo de Plasma</p>
         </div>
 
         {/* Información del usuario */}
@@ -109,12 +212,8 @@ const DetallesFalla = () => {
                       <span className="font-medium text-red-600">{fallaDetalle.valor_medido}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Rango Esperado:</span>
+                      <span className="text-gray-600">Umbral Esperado:</span>
                       <span className="font-medium text-green-600">{fallaDetalle.valor_esperado}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Desviación:</span>
-                      <span className="font-medium text-orange-600">-5°C fuera de rango</span>
                     </div>
                   </div>
                 </div>
@@ -157,7 +256,11 @@ const DetallesFalla = () => {
                 </div>
                 <div>
                   <span className="text-gray-600">Prioridad:</span>
-                  <p className="font-medium text-red-600">Alta</p>
+                  <p className={`font-medium ${
+                    fallaDetalle.severidad === 'critical' ? 'text-red-600' : 'text-orange-600'
+                  }`}>
+                    {fallaDetalle.severidad === 'critical' ? 'Alta' : 'Media'}
+                  </p>
                 </div>
                 <div>
                   <span className="text-gray-600">Estado:</span>
