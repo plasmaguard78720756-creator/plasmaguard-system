@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import ThemeSelector from './components/ThemeSelector';
+import ThemeToggle from './components/ThemeToggle';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import DashboardOperador from './pages/DashboardOperador';
@@ -19,8 +20,9 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <Router>
-          <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100" style={{ background: 'var(--bg-gradient, linear-gradient(to bottom right, #f0f9ff, #e0f2fe))' }}>
+          <div className="min-h-screen" style={{ background: 'var(--bg-gradient, linear-gradient(to bottom right, #f0f9ff, #e0f2fe))' }}>
             <ThemeSelector />
+            <ThemeToggle />
             <Routes>
               {/* Rutas públicas */}
               <Route path="/" element={<Login />} />

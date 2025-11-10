@@ -31,8 +31,6 @@ const ThemeSelector = () => {
     Object.entries(customColorValues).forEach(([key, value]) => {
       updateCustomColor(key, value);
     });
-    // Cambiar a tema custom
-    setCurrentTheme('custom');
   };
 
   if (!isThemePanelOpen) return null;

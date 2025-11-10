@@ -96,7 +96,7 @@ export const ThemeProvider = ({ children }) => {
 
   const changeTheme = (themeName) => {
     setCurrentTheme(themeName);
-    setCustomColors({}); // Reset custom colors cuando cambias tema predefinido
+    setCustomColors({});
     localStorage.setItem('plasmaguard_theme', themeName);
     localStorage.removeItem('plasmaguard_custom_colors');
   };
