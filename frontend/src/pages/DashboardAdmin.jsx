@@ -15,7 +15,10 @@ const DashboardAdmin = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [viewMode, setViewMode] = useState('view');
   const [loading, setLoading] = useState(true); 
-  const [error, setError] = useState(''); 
+  const [error, setError] = useState('');
+  const [mensajeEliminacion, setMensajeEliminacion] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredUsers, setFilteredUsers] = useState([]);
 
   const fallasEjemplo = [
     { id: 1, tipo: 'Temperatura', fecha: '2024-01-20 10:30:00', accion: 'Reporte' },
@@ -29,6 +32,21 @@ const DashboardAdmin = () => {
     { id: 3, enviado: '2024-01-20 08:50:00', visto: 'No visto', solucion: 'No' },
   ];
 
+  // Efecto para filtrar usuarios
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredUsers(usuarios);
+    } else {
+      const filtered = usuarios.filter(usuario =>
+        usuario.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        usuario.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (usuario.ci && usuario.ci.toString().includes(searchTerm)) ||
+        (usuario.id && usuario.id.toString().includes(searchTerm))
+      );
+      setFilteredUsers(filtered);
+    }
+  }, [searchTerm, usuarios]);
+
   const cargarUsuarios = async () => {
     try {
       setLoading(true);
@@ -40,14 +58,17 @@ const DashboardAdmin = () => {
       if (response.success) {
         console.log('✅ Usuarios cargados:', response.data);
         setUsuarios(response.data);
+        setFilteredUsers(response.data);
       } else {
         setError('Error al cargar usuarios: ' + response.error);
         setUsuarios([]);
+        setFilteredUsers([]);
       }
     } catch (error) {
       console.error('❌ Error cargando usuarios:', error);
       setError('Error de conexión al cargar usuarios');
       setUsuarios([]);
+      setFilteredUsers([]);
     } finally {
       setLoading(false);
     }
@@ -84,13 +105,35 @@ const DashboardAdmin = () => {
 
     try {
       setLoading(true);
+      
+      // Verificar que no sea el usuario actual
+      if (selectedUser.id === user?.id) {
+        alert('❌ No puedes eliminar tu propio usuario');
+        setShowDeleteConfirm(false);
+        return;
+      }
+
+      // Verificar que no sea el último administrador
+      if (selectedUser.role === 'admin') {
+        const adminUsers = usuarios.filter(u => u.role === 'admin' && u.active);
+        if (adminUsers.length <= 1) {
+          alert('❌ No se puede eliminar el último administrador activo');
+          setShowDeleteConfirm(false);
+          return;
+        }
+      }
+
       const response = await userService.deleteUser(selectedUser.id);
       
       if (response.success) {
         setUsuarios(usuarios.filter(u => u.id !== selectedUser.id));
         setShowDeleteConfirm(false);
         setSelectedUser(null);
-        alert('✅ Usuario eliminado exitosamente');
+        
+        // Mostrar mensaje de éxito
+        setMensajeEliminacion(`✅ Usuario "${selectedUser.name}" eliminado exitosamente`);
+        setTimeout(() => setMensajeEliminacion(''), 3000);
+        
       } else {
         alert('❌ Error al eliminar usuario: ' + response.error);
       }
@@ -476,6 +519,13 @@ const DashboardAdmin = () => {
               {error}
             </div>
           )}
+
+          {/* Mensaje de eliminación exitosa */}
+          {mensajeEliminacion && (
+            <div className="mt-4 p-3 bg-green-100 border border-green-300 text-green-700 rounded-lg animate-fade-in">
+              {mensajeEliminacion}
+            </div>
+          )}
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
@@ -484,7 +534,7 @@ const DashboardAdmin = () => {
             <div className="bg-theme-card rounded-xl shadow-lg p-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-bold text-theme">
-                  Manejo de Cuentas ({usuarios.length} usuarios)
+                  Manejo de Cuentas ({filteredUsers.length} usuarios)
                 </h2>
                 <button
                   onClick={handleAñadirUsuario}
@@ -495,10 +545,49 @@ const DashboardAdmin = () => {
                 </button>
               </div>
               
-              {usuarios.length === 0 ? (
+              {/* Buscador */}
+              <div className="mb-6">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Buscar por nombre, email, CI o ID..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary text-theme"
+                      />
+                      <div className="absolute left-3 top-3 text-gray-400">
+                        🔍
+                      </div>
+                    </div>
+                    {searchTerm && (
+                      <p className="text-sm text-theme-muted mt-2">
+                        Mostrando {filteredUsers.length} de {usuarios.length} usuarios
+                      </p>
+                    )}
+                  </div>
+                  
+                  {/* Botón de limpiar búsqueda */}
+                  {searchTerm && (
+                    <button
+                      onClick={() => setSearchTerm('')}
+                      className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition"
+                    >
+                      Limpiar
+                    </button>
+                  )}
+                </div>
+              </div>
+              
+              {filteredUsers.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-theme-muted text-lg">No hay usuarios registrados</p>
-                  <p className="text-gray-400 text-sm">Usa el botón "Añadir Usuario" para comenzar</p>
+                  <p className="text-theme-muted text-lg">
+                    {searchTerm ? 'No se encontraron usuarios' : 'No hay usuarios registrados'}
+                  </p>
+                  <p className="text-gray-400 text-sm">
+                    {searchTerm ? 'Intenta con otros términos de búsqueda' : 'Usa el botón "Añadir Usuario" para comenzar'}
+                  </p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -513,7 +602,7 @@ const DashboardAdmin = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {usuarios.map((usuario) => (
+                      {filteredUsers.map((usuario) => (
                         <tr key={usuario.id} className="hover:bg-gray-50">
                           <td className="px-4 py-3">
                             <div>
